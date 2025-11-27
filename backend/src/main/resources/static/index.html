@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste do Mapeamento</title>
+</head>
+<body>
+
+<h1>Página de Teste do Mapeamento</h1>
+<button id="myActionItem">Enviar Dados</button>
+
+<script src="behaviorPhenotyping.js"></script>
+
+<script>
+    userLog.init({
+        processTime: 0, // não enviar automático
+        actionItem: {
+            processOnAction: true,
+            selector: '#myActionItem',
+            event: 'click'
+        },
+        processData: function (results) {
+            console.log("A enviar para o backend...");
+            console.log(results);
+
+            fetch("/api/mapeamento", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(results)
+            })
+            .then(r => r.text())
+            .then(resp => console.log("Backend respondeu:", resp))
+            .catch(e => console.error("Erro:", e));
+        }
+    });
+</script>
+
+</body>
+</html>
