@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Optional;
 @SuppressWarnings("null")
 
+
 @Service
 public class UtilizadorService {
+    
 
     private final UtilizadorRepository utilizadorRepository;
 

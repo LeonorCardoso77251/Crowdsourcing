@@ -7,6 +7,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/utilizadores")
+@CrossOrigin(origins = "http://localhost:5173") // ← IMPORTANTE
 public class UtilizadorController {
 
     private final UtilizadorService utilizadorService;
@@ -29,6 +30,13 @@ public class UtilizadorController {
     public Utilizador criar(@RequestBody Utilizador utilizador) {
         return utilizadorService.criarOuAtualizar(utilizador);
     }
+        @PostMapping("/anonimo")
+        public Utilizador criarAnonimo() {
+            Utilizador u = new Utilizador();
+            u.setGenero(null);
+            u.setIdadeFaixa(null);
+            return utilizadorService.criarOuAtualizar(u);
+    }
 
     @PutMapping("/{id}")
     public Utilizador atualizar(@PathVariable Long id, @RequestBody Utilizador utilizador) {
@@ -40,4 +48,5 @@ public class UtilizadorController {
     public void apagar(@PathVariable Long id) {
         utilizadorService.apagar(id);
     }
+
 }

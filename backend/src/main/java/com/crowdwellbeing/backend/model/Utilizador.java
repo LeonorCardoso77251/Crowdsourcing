@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import java.util.List;
 @SuppressWarnings("unused")
 
-
 @Entity
 @Table(name = "Utilizador")
 public class Utilizador {

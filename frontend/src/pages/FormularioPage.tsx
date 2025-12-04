@@ -1,0 +1,189 @@
+import Navbar from "../components/Navbar";
+console.log("ESTE É O FormularioPage.tsx REAL");
+
+import { useState, useEffect } from "react";
+import { api, criarUtilizadorAnonimo, criarFormulario } from "../api/api";
+
+export default function FormularioPage() {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage2, setSelectedImage2] = useState<string | null>(null);
+
+  // 🔵 CRIAR UTILIZADOR + FORMULÁRIO AO ABRIR A PÁGINA
+useEffect(() => {
+  const iniciar = async () => {
+    console.log("🟡 UseEffect a correr!");
+
+    // ===== UTILIZADOR =====
+    let userId = localStorage.getItem("userId");
+    console.log("A verificar localStorage (userId)...", userId);
+
+    // ⚠️ Se não existir OU não for número (ex.: UUID com traços), criamos um utilizador novo
+    const userIdEhNumero = userId !== null && /^\d+$/.test(userId);
+
+    if (!userIdEhNumero) {
+      console.log("🟠 userId inválido no localStorage, a criar utilizador anónimo...");
+      const data = await criarUtilizadorAnonimo();
+
+      userId = String(data.idUtilizador); // <-- ID numérico vindo da base de dados
+      localStorage.setItem("userId", userId);
+
+      console.log("✅ Utilizador criado com ID:", userId);
+    } else {
+      console.log("✅ UserId existente (numérico):", userId);
+    }
+
+    // ===== FORMULÁRIO =====
+    let formId = localStorage.getItem("formularioId");
+    console.log("A verificar localStorage (formularioId)...", formId);
+
+    const formIdEhNumero = formId !== null && /^\d+$/.test(formId ?? "");
+
+    if (!formIdEhNumero) {
+      console.log("🟠 Não há formulário válido, a criar...");
+      const form = await criarFormulario(userId!);
+
+      formId = String(form.idFormulario);
+      localStorage.setItem("formularioId", formId);
+
+      console.log("✅ Formulário criado com ID:", formId);
+    } else {
+      console.log("✅ Formulário existente:", formId);
+    }
+  };
+
+  iniciar();
+}, []);
+
+  // 🔵 ENVIAR RESPOSTAS
+const enviarRespostas = async () => {
+  try {
+    const userId = localStorage.getItem("userId");
+    const formId = localStorage.getItem("formularioId");
+
+    if (!userId || !formId) {
+      alert("Erro: IDs não encontrados. Atualize a página.");
+      return;
+    }
+
+    const dadosParaEnviar = {
+      resposta1: selectedImage,
+      resposta2: selectedImage2,
+      idUtilizador: Number(userId),
+      idFormulario: Number(formId)
+    };
+
+    console.log("📤 Enviando para o backend:", dadosParaEnviar);
+
+    await api.post("/respostas", dadosParaEnviar);
+
+    alert("Respostas enviadas com sucesso!");
+
+  } catch (error) {
+    console.error("Erro ao enviar respostas:", error);
+    alert("Erro ao enviar respostas");
+  }
+};
+
+
+  // Imagens
+  const imagens = [
+    "/img/img1.png",
+    "/img/img2.png",
+    "/img/img3.png",
+    "/img/img4.png",
+    "/img/img5.png",
+    "/img/img6.png",
+  ];
+
+  const imagensPergunta2 = [
+    "/img/img4.png",
+    "/img/img1.png",
+    "/img/img6.png",
+    "/img/img2.png",
+    "/img/img5.png",
+    "/img/img3.png",
+  ];
+
+  return (
+    <div>
+      <Navbar />
+
+      <div className="p-8 max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-blue-700 mb-6">Questionário</h1>
+
+        {/* INSTRUÇÕES */}
+        <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg mb-8">
+          <p className="text-gray-700">
+            <strong>Instruções:</strong> Observe atentamente as imagens apresentadas
+            e escolha a que considera mais adequada a cada questão.
+          </p>
+        </div>
+
+        {/* PERGUNTA 1 */}
+        <div className="bg-gray-50 border border-gray-300 p-6 rounded-lg shadow-sm mb-8">
+          <h2 className="text-xl font-semibold mb-4">
+            Pergunta 1 – Identificação da imagem com maior mobilidade
+          </h2>
+
+          <p className="mb-4">
+            Qual destas imagens considera que representa maior mobilidade?
+          </p>
+
+          <div className="grid grid-cols-2 gap-4">
+            {imagens.map((img, index) => (
+              <div
+                key={index}
+                className={`border rounded-lg p-2 cursor-pointer transition ${
+                  selectedImage === img ? "border-blue-600 shadow-md" : "border-gray-300"
+                }`}
+                onClick={() => setSelectedImage(img)}
+              >
+                <img src={img} alt={`opcao-${index}`} className="w-full rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* PERGUNTA 2 */}
+        <div className="bg-gray-50 border border-gray-300 p-6 rounded-lg shadow-sm mb-8">
+          <h2 className="text-xl font-semibold mb-4">
+            Pergunta 2 – Autoavaliação de movimento
+          </h2>
+
+          <p className="mb-4">
+            Qual das imagens considera que melhor representa o seu movimento?
+          </p>
+
+          <div className="grid grid-cols-2 gap-4">
+            {imagensPergunta2.map((img, index) => (
+              <div
+                key={index}
+                className={`border rounded-lg p-2 cursor-pointer transition ${
+                  selectedImage2 === img ? "border-blue-600 shadow-md" : "border-gray-300"
+                }`}
+                onClick={() => setSelectedImage2(img)}
+              >
+                <img src={img} alt={`p2-opcao-${index}`} className="w-full rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* BOTÃO */}
+        <div className="mt-8">
+          <button
+            disabled={!selectedImage || !selectedImage2}
+            onClick={enviarRespostas}
+            className={`px-6 py-3 text-white rounded-lg ${
+              selectedImage && selectedImage2
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-gray-400"
+            }`}
+          >
+            Enviar respostas
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

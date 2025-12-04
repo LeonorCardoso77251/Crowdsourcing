@@ -1,5 +1,5 @@
 package com.crowdwellbeing.backend.model;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -17,12 +17,11 @@ public class Formulario {
     @Column(name = "Pergunta2")
     private String pergunta2;
 
-    // Relação com Utilizador (muitos formulários podem pertencer a 1 utilizador)
     @ManyToOne
-    @JoinColumn(name = "ID_Utilizador")
+    @JoinColumn(name = "ID_Utilizador", nullable = false)
+    @JsonIgnoreProperties({"formularios", "classificacoes", "respostas", "mapeamentos"})
     private Utilizador utilizador;
 
-    // Getters e Setters
     public Long getIdFormulario() { return idFormulario; }
     public void setIdFormulario(Long idFormulario) { this.idFormulario = idFormulario; }
 
@@ -34,4 +33,5 @@ public class Formulario {
 
     public Utilizador getUtilizador() { return utilizador; }
     public void setUtilizador(Utilizador utilizador) { this.utilizador = utilizador; }
+    
 }
