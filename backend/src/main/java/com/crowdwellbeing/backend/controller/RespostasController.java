@@ -1,5 +1,6 @@
 package com.crowdwellbeing.backend.controller;
 
+import com.crowdwellbeing.backend.dto.RespostasDTO;
 import com.crowdwellbeing.backend.model.Respostas;
 import com.crowdwellbeing.backend.service.RespostasService;
 import org.springframework.web.bind.annotation.*;
@@ -26,9 +27,10 @@ public class RespostasController {
     }
 
     @PostMapping
-    public Respostas criar(@RequestBody Respostas respostas) {
-        return respostasService.criarOuAtualizar(respostas);
+    public Respostas criar(@RequestBody RespostasDTO dto) {
+        return respostasService.salvar(dto);
     }
+
 
     @PutMapping("/{id}")
     public Respostas atualizar(@PathVariable Long id, @RequestBody Respostas respostas) {
@@ -40,4 +42,6 @@ public class RespostasController {
     public void apagar(@PathVariable Long id) {
         respostasService.apagar(id);
     }
+    
 }
+
