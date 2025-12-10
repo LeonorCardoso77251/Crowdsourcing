@@ -2,87 +2,79 @@ import Navbar from "../components/Navbar";
 console.log("ESTE É O FormularioPage.tsx REAL");
 
 import { useState, useEffect } from "react";
-import { api, criarUtilizadorAnonimo, criarFormulario } from "../api/api";
+import { api, criarFormulario } from "../api/api";
 
 export default function FormularioPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedImage2, setSelectedImage2] = useState<string | null>(null);
 
-  // 🔵 CRIAR UTILIZADOR + FORMULÁRIO AO ABRIR A PÁGINA
-useEffect(() => {
-  const iniciar = async () => {
-    console.log("🟡 UseEffect a correr!");
+  // 🟦 AO ABRIR A PÁGINA → usar userId do localStorage + criar formulário
+  useEffect(() => {
+    const iniciar = async () => {
+      console.log("🟡 UseEffect a correr!");
 
-    // ===== UTILIZADOR =====
-    let userId = localStorage.getItem("userId");
-    console.log("A verificar localStorage (userId)...", userId);
+      // ===== UTILIZADOR =====
+      const userId = localStorage.getItem("userId");
+      console.log("A verificar localStorage (userId)...", userId);
 
-    // ⚠️ Se não existir OU não for número (ex.: UUID com traços), criamos um utilizador novo
-    const userIdEhNumero = userId !== null && /^\d+$/.test(userId);
+      if (!userId) {
+        console.error("❌ ERRO: userId não encontrado! O utilizador não passou pelo Forms.");
+        alert("Erro: não foi encontrado um ID válido. Volte à página inicial.");
+        return;
+      }
 
-    if (!userIdEhNumero) {
-      console.log("🟠 userId inválido no localStorage, a criar utilizador anónimo...");
-      const data = await criarUtilizadorAnonimo();
+      // ===== FORMULÁRIO =====
+      let formId = localStorage.getItem("formularioId");
+      console.log("A verificar localStorage (formularioId)...", formId);
 
-      userId = String(data.idUtilizador); // <-- ID numérico vindo da base de dados
-      localStorage.setItem("userId", userId);
+      if (!formId) {
+        console.log("🟠 Não há formulário, a criar...");
 
-      console.log("✅ Utilizador criado com ID:", userId);
-    } else {
-      console.log("✅ UserId existente (numérico):", userId);
-    }
+        const form = await criarFormulario(userId);
+        formId = String(form.idFormulario);
 
-    // ===== FORMULÁRIO =====
-    let formId = localStorage.getItem("formularioId");
-    console.log("A verificar localStorage (formularioId)...", formId);
+        localStorage.setItem("formularioId", formId);
 
-    const formIdEhNumero = formId !== null && /^\d+$/.test(formId ?? "");
+        console.log("✅ Formulário criado com ID:", formId);
+      } else {
+        console.log("✅ Formulário existente:", formId);
+      }
+    };
 
-    if (!formIdEhNumero) {
-      console.log("🟠 Não há formulário válido, a criar...");
-      const form = await criarFormulario(userId!);
+    iniciar();
+  }, []);
 
-      formId = String(form.idFormulario);
-      localStorage.setItem("formularioId", formId);
+  // 🟦 ENVIAR RESPOSTAS
+  const enviarRespostas = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const formId = localStorage.getItem("formularioId");
 
-      console.log("✅ Formulário criado com ID:", formId);
-    } else {
-      console.log("✅ Formulário existente:", formId);
+      if (!userId || !formId) {
+        alert("Erro: IDs não encontrados. Atualize a página.");
+        return;
+      }
+
+      const dadosParaEnviar = {
+        resposta1: selectedImage,
+        resposta2: selectedImage2,
+        idUtilizador: Number(userId),
+        idFormulario: Number(formId),
+      };
+
+      console.log("📤 Enviando para o backend:", dadosParaEnviar);
+
+      await api.post("/respostas", dadosParaEnviar);
+
+      alert("Respostas enviadas com sucesso!");
+    } catch (error) {
+      console.error("Erro ao enviar respostas:", error);
+      alert("Erro ao enviar respostas");
     }
   };
 
-  iniciar();
-}, []);
+  // --- resto do componente (imagens, layout, botão Enviar) continua IGUAL ---
 
-  // 🔵 ENVIAR RESPOSTAS
-const enviarRespostas = async () => {
-  try {
-    const userId = localStorage.getItem("userId");
-    const formId = localStorage.getItem("formularioId");
-
-    if (!userId || !formId) {
-      alert("Erro: IDs não encontrados. Atualize a página.");
-      return;
-    }
-
-    const dadosParaEnviar = {
-      resposta1: selectedImage,
-      resposta2: selectedImage2,
-      idUtilizador: Number(userId),
-      idFormulario: Number(formId)
-    };
-
-    console.log("📤 Enviando para o backend:", dadosParaEnviar);
-
-    await api.post("/respostas", dadosParaEnviar);
-
-    alert("Respostas enviadas com sucesso!");
-
-  } catch (error) {
-    console.error("Erro ao enviar respostas:", error);
-    alert("Erro ao enviar respostas");
-  }
-};
 
 
   // Imagens

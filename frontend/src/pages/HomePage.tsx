@@ -1,39 +1,39 @@
-import { useEffect } from "react";
 import Navbar from "../components/Navbar";
-import { Link } from "react-router-dom";
+import { api } from "../api/api";
 
 export default function HomePage() {
-  // Quando o utilizador entra no site, garante que tem um ID guardado
-  useEffect(() => {
-    let userId = localStorage.getItem("userId");
 
-    if (!userId) {
-      if (crypto.randomUUID) {
-        userId = crypto.randomUUID();
-      } else {
-        userId =
-          Math.random().toString(36).substring(2) +
-          Date.now().toString(36);
-      }
+  // 🟦 Quando o utilizador clica para participar → cria utilizador + abre Forms
+  const handleParticiparClick = async () => {
+    console.log("➡️ Botão 'Participar' clicado!");
 
-      localStorage.setItem("userId", userId);
+    try {
+      // 1️⃣ Criar utilizador no backend
+      console.log("📡 A criar utilizador anónimo no backend...");
+      const response = await api.post("/utilizadores/anonimo");
+      const userId = response.data.idUtilizador;
+
+      // 2️⃣ Guardar localmente
+      localStorage.setItem("userId", userId.toString());
+      console.log("✅ Utilizador criado! ID =", userId);
+
+      // 3️⃣ Abrir Google Forms com o ID
+      const baseUrl =
+        "https://docs.google.com/forms/d/e/1FAIpQLScjLoD_w-LjrrxBQd1pepofnVggK8SE_sZg8oH9Oaxrb_0iBg/viewform";
+
+      const entryKey = "entry.1163141320"; // campo oculto do Forms
+
+      const url = `${baseUrl}?usp=pp_url&${entryKey}=${encodeURIComponent(
+        userId
+      )}`;
+
+      console.log("🔗 A abrir Google Forms com URL:", url);
+      window.open(url, "_blank");
+
+    } catch (error) {
+      console.error("❌ Erro ao criar utilizador:", error);
+      alert("Ocorreu um erro ao iniciar a participação.");
     }
-  }, []);
-
-  // Função que abre o Google Forms já com o código do participante
-  const handleGoogleFormClick = () => {
-    const userId = localStorage.getItem("userId") || "";
-
-    const baseUrl =
-      "https://docs.google.com/forms/d/e/1FAIpQLScjLoD_w-LjrrxBQd1pepofnVggK8SE_sZg8oH9Oaxrb_0iBg/viewform";
-
-    const entryKey = "entry.1163141320"; // <-- ESTE é o ID da pergunta "Código do Participante"
-
-    const url = `${baseUrl}?usp=pp_url&${entryKey}=${encodeURIComponent(
-      userId
-    )}`;
-
-    window.open(url, "_blank");
   };
 
   return (
@@ -41,30 +41,25 @@ export default function HomePage() {
       <Navbar />
 
       <div className="p-10 text-center">
+
         {/* Título */}
-        <h1 className="text-4xl font-bold text-blue-700">Bem-vindo!</h1>
+        <h1 className="text-4xl font-bold text-blue-700">
+          Bem-vindo ao Estudo!
+        </h1>
 
         {/* Subtítulo */}
-        <p className="mt-4 text-xl text-gray-700">
-          Participe da nossa pesquisa e contribua com informações.
+        <p className="mt-4 text-xl text-gray-700 max-w-2xl mx-auto">
+          Para participar, clique no botão abaixo. Irá primeiro preencher um
+          formulário inicial e depois continuará o estudo no nosso site.
         </p>
 
-        {/* Botões */}
-        <div className="mt-10 flex justify-center gap-6">
-          {/* Botão 1 → Formulário interno */}
-          <Link
-            to="/formulario"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition"
-          >
-            Aceder ao Formulário
-          </Link>
-
-          {/* Botão 2 → Google Forms, com código do participante */}
+        {/* Botão principal */}
+        <div className="mt-12">
           <button
-            onClick={handleGoogleFormClick}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-green-700 transition"
+            onClick={handleParticiparClick}
+            className="bg-blue-600 text-white px-8 py-4 rounded-lg text-xl font-semibold hover:bg-blue-700 transition"
           >
-            Preencher Google Form
+            Participar no Estudo
           </button>
         </div>
       </div>

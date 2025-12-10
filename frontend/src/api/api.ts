@@ -15,3 +15,7 @@ export const criarFormulario = async (userId: string | number) => {
   const response = await api.post(`/formularios/novo/${userId}`, null);
   return response.data;
 };
+export const obterUtilizadores = async () => {
+  const response = await api.get("/utilizadores");
+  return response.data;
+};
