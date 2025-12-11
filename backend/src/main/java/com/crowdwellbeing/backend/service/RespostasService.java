@@ -1,5 +1,11 @@
 package com.crowdwellbeing.backend.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
 import com.crowdwellbeing.backend.dto.RespostasDTO;
 import com.crowdwellbeing.backend.model.Formulario;
 import com.crowdwellbeing.backend.model.Respostas;
@@ -7,11 +13,6 @@ import com.crowdwellbeing.backend.model.Utilizador;
 import com.crowdwellbeing.backend.repository.FormularioRepository;
 import com.crowdwellbeing.backend.repository.RespostasRepository;
 import com.crowdwellbeing.backend.repository.UtilizadorRepository;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RespostasService {
@@ -56,6 +57,7 @@ public class RespostasService {
         Respostas respostas = new Respostas();
         respostas.setResposta1(dto.getResposta1());
         respostas.setResposta2(dto.getResposta2());
+        respostas.setResposta3(dto.getResposta3());   // 🔵 NOVO
         respostas.setTempo(LocalDateTime.now());
         respostas.setUtilizador(utilizador);
         respostas.setFormulario(formulario);

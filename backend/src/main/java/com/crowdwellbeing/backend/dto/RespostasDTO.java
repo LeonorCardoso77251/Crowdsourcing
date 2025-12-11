@@ -4,6 +4,7 @@ public class RespostasDTO {
 
     private String resposta1;
     private String resposta2;
+    private String resposta3;  // 🔵 NOVO
     private Long idUtilizador;
     private Long idFormulario;
 
@@ -21,6 +22,15 @@ public class RespostasDTO {
 
     public void setResposta2(String resposta2) {
         this.resposta2 = resposta2;
+    }
+
+    // 🔵 NOVO
+    public String getResposta3() {
+        return resposta3;
+    }
+
+    public void setResposta3(String resposta3) {
+        this.resposta3 = resposta3;
     }
 
     public Long getIdUtilizador() {
