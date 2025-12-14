@@ -4,34 +4,29 @@ export default function Navbar() {
   const isAdmin = localStorage.getItem("admin") === "true";
 
   return (
-    <nav className="bg-blue-600 text-white px-8 py-4 flex gap-6 items-center justify-between">
+    <nav className="bg-red-600 text-white px-8 h-16 flex items-center justify-between">
       
-      {/* Lado esquerdo → Início */}
-      <div className="flex gap-6">
-        <Link to="/" className="font-bold hover:underline">
-          Início
-        </Link>
-      </div>
+      {/* LOGO CLICÁVEL */}
+      <Link to="/" className="flex items-center h-full">
+        <img
+          src="/img/logo.png"
+          alt="Logotipo"
+          className="h-12 w-auto object-contain"
+        />
+      </Link>
 
-      {/* Lado direito → Login/Admin */}
+      {/* ÁREA ADMIN */}
       <div>
         {!isAdmin ? (
-          <Link 
-            to="/login" 
-            className="hover:underline"
-          >
+          <Link to="/login" className="hover:underline">
             Área Admin
           </Link>
         ) : (
-          <Link 
-            to="/dashboard"
-            className="hover:underline"
-          >
+          <Link to="/dashboard" className="hover:underline">
             Admin
           </Link>
         )}
       </div>
-
     </nav>
   );
 }

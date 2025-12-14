@@ -219,7 +219,7 @@ utilizadoresParaGeneros.forEach((u) => {
       <AdminNavbar />
 
       <div className="p-10">
-        <h1 className="text-3xl font-bold mb-6">📊 Dashboard — Estatísticas</h1>
+        <h1 className="text-3xl font-bold mb-6">Dashboard — Estatísticas</h1>
 
         {/* FILTROS DEMOGRÁFICOS */}
         <div className="flex flex-wrap gap-6 mb-10">
