@@ -9,13 +9,19 @@ export default function AdminNavbar() {
   };
 
   return (
-    <nav className="bg-blue-600 text-white px-8 py-4 flex gap-6 items-center">
+    <nav className="bg-red-600 text-white px-8 py-4 flex gap-6 items-center">
+      
       <Link to="/" className="font-bold hover:underline">
         Início
       </Link>
 
       <Link to="/dashboard" className="hover:underline">
         Dashboard
+      </Link>
+
+      {/* 🔴 NOVO BOTÃO PARA O FORMULÁRIO */}
+      <Link to="/formulario" className="hover:underline">
+        Formulário
       </Link>
 
       <Link to="/admin/importar" className="hover:underline">

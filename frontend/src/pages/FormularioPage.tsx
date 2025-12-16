@@ -86,7 +86,8 @@ export default function FormularioPage() {
     <div>
       <Navbar />
 
-      <div className="p-8 max-w-4xl mx-auto">
+      <div className="p-8 max-w-14xl mx-auto">
+
         <h1 className="text-3xl font-bold text-red-700 mb-6">Questionário</h1>
 
         {/* INSTRUÇÕES */}
@@ -113,14 +114,26 @@ export default function FormularioPage() {
             {imagens.map((img, index) => (
               <div
                 key={index}
-                className={`border rounded-lg p-2 cursor-pointer transition ${
+        
+  //className={`border rounded-lg p-4 cursor-pointer transition min-h-[1200px] flex items-center justify-center ${
+    className={`border rounded-lg p-4 cursor-pointer transition aspect-[3/4] min-h-[900px] flex items-center justify-center ${
+
+
                   selectedImage === img
                     ? "border-red-600 shadow-md"
                     : "border-gray-300"
                 }`}
                 onClick={() => setSelectedImage(img)}
               >
-                <img src={img} alt={`opcao-${index}`} className="w-full rounded" />
+<img
+  src={img}
+  alt={`opcao-${index}`}
+  className="max-w-full max-h-full object-contain rounded transition-transform duration-300 hover:scale-125"
+/>
+
+
+
+
               </div>
             ))}
           </div>
@@ -141,14 +154,20 @@ export default function FormularioPage() {
             {imagensPergunta2.map((img, index) => (
               <div
                 key={index}
-                className={`border rounded-lg p-2 cursor-pointer transition ${
+                className={`border rounded-lg p-4 cursor-pointer transition aspect-[3/4] min-h-[900px] flex items-center justify-center ${
                   selectedImage2 === img
                     ? "border-red-600 shadow-md"
                     : "border-gray-300"
                 }`}
                 onClick={() => setSelectedImage2(img)}
               >
-                <img src={img} alt={`p2-opcao-${index}`} className="w-full rounded" />
+<img
+  src={img}
+  alt={`opcao-${index}`}
+  className="max-w-full max-h-full object-contain rounded transition-transform duration-300 hover:scale-125"
+/>
+
+
               </div>
             ))}
           </div>
@@ -177,7 +196,12 @@ export default function FormularioPage() {
                 }`}
                 onClick={() => setSelectedImage3(img)}
               >
-                <img src={img} alt={`p3-opcao-${index}`} className="w-full rounded" />
+<img
+  src={img}
+  alt={`opcao-${index}`}
+  className="max-w-full max-h-full object-contain rounded transition-transform duration-300 hover:scale-125"
+/>
+
               </div>
             ))}
           </div>
@@ -191,7 +215,7 @@ export default function FormularioPage() {
             className={`px-6 py-3 text-white rounded-lg ${
               selectedImage && selectedImage2 && selectedImage3
                 ? "bg-red-600 hover:bg-red-700"
-                : "bg-gray-400"
+                : "bg-red-400"
             }`}
           >
             Enviar respostas
