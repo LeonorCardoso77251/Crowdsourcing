@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import HomePage from "../pages/HomePage";
 import FormularioPage from "../pages/FormularioPage";
+import AvaliacaoPage from "../pages/AvaliacaoPage"; // 🔴 NOVO
 import DashboardPage from "../pages/DashboardPage";
 import ImportarCSVPage from "../pages/ImportarCSVPage";
 import LoginPage from "../pages/LoginPage";
@@ -15,6 +16,7 @@ export default function AppRouter() {
         {/* Rotas públicas */}
         <Route path="/" element={<HomePage />} />
         <Route path="/formulario" element={<FormularioPage />} />
+        <Route path="/avaliacao" element={<AvaliacaoPage />} /> {/* 🔴 NOVA */}
         <Route path="/login" element={<LoginPage />} />
 
         {/* Rotas protegidas */}

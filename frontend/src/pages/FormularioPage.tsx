@@ -1,10 +1,15 @@
 import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
+
 console.log("ESTE É O FormularioPage.tsx REAL");
 
 import { useState, useEffect } from "react";
 import { api, criarFormulario } from "../api/api";
 
 export default function FormularioPage() {
+  const navigate = useNavigate();
+
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedImage2, setSelectedImage2] = useState<string | null>(null);
   const [selectedImage3, setSelectedImage3] = useState<string | null>(null);
@@ -30,30 +35,35 @@ export default function FormularioPage() {
     iniciar();
   }, []);
 
-  const enviarRespostas = async () => {
-    try {
-      const userId = localStorage.getItem("userId");
-      const formId = localStorage.getItem("formularioId");
+ const enviarRespostas = async () => {
+  try {
+    const userId = localStorage.getItem("userId");
+    const formId = localStorage.getItem("formularioId");
 
-      if (!userId || !formId) {
-        alert("Erro: IDs não encontrados. Atualize a página.");
-        return;
-      }
-
-      const dadosParaEnviar = {
-        resposta1: selectedImage,
-        resposta2: selectedImage2,
-        resposta3: selectedImage3,
-        idUtilizador: Number(userId),
-        idFormulario: Number(formId),
-      };
-
-      await api.post("/respostas", dadosParaEnviar);
-      alert("Respostas enviadas com sucesso!");
-    } catch {
-      alert("Erro ao enviar respostas");
+    if (!userId || !formId) {
+      alert("Erro: IDs não encontrados. Atualize a página.");
+      return;
     }
-  };
+
+    const dadosParaEnviar = {
+      resposta1: selectedImage,
+      resposta2: selectedImage2,
+      resposta3: selectedImage3,
+      idUtilizador: Number(userId),
+      idFormulario: Number(formId),
+    };
+
+    await api.post("/respostas", dadosParaEnviar);
+
+    // ✅ navegar para avaliação
+    navigate("/avaliacao");
+
+  } catch (error) {
+    console.error("Erro ao enviar respostas:", error);
+    alert("Erro ao enviar respostas");
+  }
+};
+
 
   const imagens = [
     "/img/img1.png",
@@ -115,7 +125,7 @@ export default function FormularioPage() {
               <div
                 key={index}
         
-  //className={`border rounded-lg p-4 cursor-pointer transition min-h-[1200px] flex items-center justify-center ${
+
     className={`border rounded-lg p-4 cursor-pointer transition aspect-[3/4] min-h-[900px] flex items-center justify-center ${
 
 
