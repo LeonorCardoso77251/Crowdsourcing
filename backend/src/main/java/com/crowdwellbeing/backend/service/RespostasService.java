@@ -46,22 +46,46 @@ public class RespostasService {
     }
 
     // 🔥 MÉTODO QUE FALTAVA
-    public Respostas salvar(RespostasDTO dto) {
+public Respostas salvar(RespostasDTO dto) {
 
-        Utilizador utilizador = utilizadorRepository.findById(dto.getIdUtilizador())
-                .orElseThrow(() -> new RuntimeException("Utilizador não encontrado"));
+    System.out.println("📥 [POST /respostas] DTO recebido");
+    System.out.println("→ idUtilizador: " + dto.getIdUtilizador());
+    System.out.println("→ idFormulario: " + dto.getIdFormulario());
+    System.out.println("→ resposta1: " + dto.getResposta1());
+    System.out.println("→ resposta2: " + dto.getResposta2());
+    System.out.println("→ resposta3: " + dto.getResposta3());
 
-        Formulario formulario = formularioRepository.findById(dto.getIdFormulario())
-                .orElseThrow(() -> new RuntimeException("Formulário não encontrado"));
+    Utilizador utilizador = utilizadorRepository.findById(dto.getIdUtilizador())
+            .orElseThrow(() -> {
+                System.out.println("❌ Utilizador NÃO encontrado");
+                return new RuntimeException("Utilizador não encontrado");
+            });
 
-        Respostas respostas = new Respostas();
-        respostas.setResposta1(dto.getResposta1());
-        respostas.setResposta2(dto.getResposta2());
-        respostas.setResposta3(dto.getResposta3());   // 🔵 NOVO
-        respostas.setTempo(LocalDateTime.now());
-        respostas.setUtilizador(utilizador);
-        respostas.setFormulario(formulario);
+    System.out.println("✅ Utilizador encontrado → ID " + utilizador.getIdUtilizador());
 
-        return respostasRepository.save(respostas);
-    }
+    Formulario formulario = formularioRepository.findById(dto.getIdFormulario())
+            .orElseThrow(() -> {
+                System.out.println("❌ Formulário NÃO encontrado");
+                return new RuntimeException("Formulário não encontrado");
+            });
+
+    System.out.println("✅ Formulário encontrado → ID " + formulario.getIdFormulario());
+
+    Respostas respostas = new Respostas();
+    respostas.setResposta1(dto.getResposta1());
+    respostas.setResposta2(dto.getResposta2());
+    respostas.setResposta3(dto.getResposta3());
+    respostas.setTempo(LocalDateTime.now());
+    respostas.setUtilizador(utilizador);
+    respostas.setFormulario(formulario);
+
+    Respostas guardada = respostasRepository.save(respostas);
+
+    System.out.println("💾 Resposta guardada com sucesso");
+    System.out.println("→ ID_Respostas: " + guardada.getIdRespostas());
+    System.out.println("→ Tempo: " + guardada.getTempo());
+
+    return guardada;
+}
+
 }

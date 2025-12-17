@@ -1,5 +1,7 @@
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import { useBehavioralTracking } from "../hooks/useBehavioralTracking";
+
 
 console.log("ESTE É O FormularioPage.tsx REAL");
 
@@ -7,6 +9,7 @@ import { useState, useEffect } from "react";
 import { api, criarFormulario } from "../api/api";
 
 export default function FormularioPage() {
+  useBehavioralTracking();
   const navigate = useNavigate();
 
 
@@ -40,6 +43,13 @@ export default function FormularioPage() {
     const userId = localStorage.getItem("userId");
     const formId = localStorage.getItem("formularioId");
 
+    console.log("📤 A enviar respostas para o backend");
+    console.log("idUtilizador:", userId);
+    console.log("idFormulario:", formId);
+    console.log("resposta1:", selectedImage);
+    console.log("resposta2:", selectedImage2);
+    console.log("resposta3:", selectedImage3);
+
     if (!userId || !formId) {
       alert("Erro: IDs não encontrados. Atualize a página.");
       return;
@@ -53,16 +63,34 @@ export default function FormularioPage() {
       idFormulario: Number(formId),
     };
 
+    // 1️⃣ Enviar respostas
     await api.post("/respostas", dadosParaEnviar);
+    console.log("✅ POST /respostas concluído com sucesso");
 
-    // ✅ navegar para avaliação
-    navigate("/avaliacao");
+    // 2️⃣ FLUSH dos logs comportamentais (tipado, sem any)
+    const w = window as unknown as {
+      userLog?: {
+        processResults: () => void;
+      };
+    };
+
+if (w.userLog) {
+  w.userLog.processResults();
+  console.log("🧠 Logs comportamentais flushados");
+}
+
+// ⏱️ dar tempo ao processData para gravar no localStorage
+setTimeout(() => {
+  navigate("/avaliacao");
+}, 0);
+
 
   } catch (error) {
-    console.error("Erro ao enviar respostas:", error);
+    console.error("❌ Erro ao enviar respostas:", error);
     alert("Erro ao enviar respostas");
   }
 };
+
 
 
   const imagens = [

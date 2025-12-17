@@ -1,19 +1,48 @@
 package com.crowdwellbeing.backend.controller;
 
-import com.crowdwellbeing.backend.model.Relatorio;
-import com.crowdwellbeing.backend.service.RelatorioService;
-import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.crowdwellbeing.backend.dto.BehaviorLogDTO;
+import com.crowdwellbeing.backend.model.Relatorio;
+import com.crowdwellbeing.backend.model.Utilizador;
+import com.crowdwellbeing.backend.repository.RelatorioRepository;
+import com.crowdwellbeing.backend.repository.UtilizadorRepository;
+import com.crowdwellbeing.backend.service.RelatorioService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/relatorios")
 public class RelatorioController {
 
     private final RelatorioService relatorioService;
+    private final RelatorioRepository relatorioRepository;
+    private final UtilizadorRepository utilizadorRepository;
+    private final ObjectMapper objectMapper;
 
-    public RelatorioController(RelatorioService relatorioService) {
+    public RelatorioController(
+            RelatorioService relatorioService,
+            RelatorioRepository relatorioRepository,
+            UtilizadorRepository utilizadorRepository,
+            ObjectMapper objectMapper
+    ) {
         this.relatorioService = relatorioService;
+        this.relatorioRepository = relatorioRepository;
+        this.utilizadorRepository = utilizadorRepository;
+        this.objectMapper = objectMapper;
     }
+
+    // 🔹 ENDPOINTS EXISTENTES (intocados)
 
     @GetMapping
     public List<Relatorio> listarTodos() {
@@ -39,5 +68,22 @@ public class RelatorioController {
     @DeleteMapping("/{id}")
     public void apagar(@PathVariable Long id) {
         relatorioService.apagar(id);
+    }
+
+    // 🔹 NOVO ENDPOINT: logs comportamentais
+    @PostMapping("/behavioral")
+    public void guardarBehavioralLogs(@RequestBody BehaviorLogDTO dto)
+            throws JsonProcessingException {
+
+        Utilizador utilizador = utilizadorRepository
+                .findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("Utilizador não encontrado"));
+
+        Relatorio relatorio = new Relatorio();
+        relatorio.setUtilizador(utilizador);
+        relatorio.setBehavioralLogs(objectMapper.writeValueAsString(dto.getLogs()));
+        relatorio.setDataCriacao(LocalDateTime.now());
+
+        relatorioRepository.save(relatorio);
     }
 }

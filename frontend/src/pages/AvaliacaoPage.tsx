@@ -1,6 +1,36 @@
 import Navbar from "../components/Navbar";
+import { useEffect } from "react";
+import { api } from "../api/api";
+import { useBehavioralTracking } from "../hooks/useBehavioralTracking";
 
 export default function AvaliacaoPage() {
+   // continua a recolher enquanto esta página está aberta
+  useBehavioralTracking();
+  // termina o estudo quando a página carrega
+useEffect(() => {
+  const logs = localStorage.getItem("behaviorLogs");
+  const userId = localStorage.getItem("userId");
+
+  if (logs && userId) {
+    api.post("/relatorios/behavioral", {
+      userId: Number(userId),
+      logs: JSON.parse(logs),
+    })
+    .then(() => {
+      console.log("✅ Logs comportamentais enviados para o backend");
+    })
+    .catch(err => {
+      console.error("❌ Erro ao enviar logs:", err);
+    });
+
+    // limpar estado
+    localStorage.removeItem("studyActive");
+    localStorage.removeItem("behaviorLogs");
+    localStorage.removeItem("studyStartTime");
+    localStorage.removeItem("formularioId");
+  }
+}, []);
+
   return (
     <div>
       <Navbar />
