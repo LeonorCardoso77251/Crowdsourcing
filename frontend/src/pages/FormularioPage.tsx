@@ -100,7 +100,15 @@ export default function FormularioPage() {
       }
 
       // 3️⃣ Avançar para a avaliação
-      navigate("/avaliacao");
+navigate("/avaliacao", {
+  state: {
+    respostas: {
+      pergunta1: selectedImage,
+      pergunta2: selectedImage2,
+      pergunta3: selectedImage3,
+    },
+  },
+});
 
     } catch (error) {
       console.error("❌ Erro ao enviar respostas:", error);
@@ -121,20 +129,20 @@ export default function FormularioPage() {
   ];
 
   const imagensPergunta2 = [
-    "/img/img4.png",
+    "/img/img7.png",
     "/img/img1.png",
     "/img/img6.png",
     "/img/img2.png",
     "/img/img5.png",
-    "/img/img3.png",
+    "/img/img10.png",
   ];
 
   const imagensPergunta3 = [
     "/img/img2.png",
     "/img/img5.png",
     "/img/img1.png",
-    "/img/img6.png",
-    "/img/img3.png",
+    "/img/img9.png",
+    "/img/img8.png",
     "/img/img4.png",
   ];
 

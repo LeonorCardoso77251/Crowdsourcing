@@ -2,13 +2,21 @@ import Navbar from "../components/Navbar";
 import { useEffect } from "react";
 import { api } from "../api/api";
 import { useBehavioralTracking } from "../hooks/useBehavioralTracking";
+import { useLocation, Navigate } from "react-router-dom";
+import { calcularAvaliacao } from "../utils/avaliacao";
 
 export default function AvaliacaoPage() {
-
   // Continua a recolher logs enquanto a página está aberta
   useBehavioralTracking();
 
-  // Enviar logs e terminar o estudo
+  // 🔹 Obter respostas vindas do formulário (via navigate state)
+  const location = useLocation();
+  const respostas = location.state?.respostas;
+
+  // ✅ Calcula resultado só se houver respostas (sem crashes)
+  const resultado = respostas ? calcularAvaliacao(respostas) : null;
+
+  // Enviar logs e terminar o estudo (mantido igual ao teu)
   useEffect(() => {
     const logs = localStorage.getItem("behaviorLogs");
     const idUtilizador = localStorage.getItem("idUtilizador");
@@ -21,23 +29,49 @@ export default function AvaliacaoPage() {
     if (logs) {
       console.log("📤 A enviar logs comportamentais para o backend");
 
-      api.post("/relatorios/behavioral", {
-        userId: Number(idUtilizador),
-        logs: JSON.parse(logs),
-      })
-      .then(() => {
-        console.log("✅ Logs comportamentais enviados com sucesso");
+      api
+        .post("/relatorios/behavioral", {
+          userId: Number(idUtilizador),
+          logs: JSON.parse(logs),
+        })
+        .then(() => {
+          console.log("✅ Logs comportamentais enviados com sucesso");
 
-        // 🔚 Terminar estudo
-        localStorage.removeItem("behaviorLogs");
-        localStorage.removeItem("studyActive");
-
-      })
-      .catch((err) => {
-        console.error("❌ Erro ao enviar logs:", err);
-      });
+          // 🔚 Terminar estudo
+          localStorage.removeItem("behaviorLogs");
+          localStorage.removeItem("studyActive");
+        })
+        .catch((err) => {
+          console.error("❌ Erro ao enviar logs:", err);
+        });
     }
   }, []);
+  // 🔹 Guardar resultado da avaliação no backend
+useEffect(() => {
+  const idUtilizador = localStorage.getItem("idUtilizador");
+  const idFormulario = localStorage.getItem("formularioId");
+
+  if (!idUtilizador || !idFormulario || !resultado) return;
+
+  api.post("/avaliacoes", {
+    idUtilizador: Number(idUtilizador),
+    idFormulario: Number(idFormulario),
+    scoreTotal: resultado.scoreTotal,
+    nivel: resultado.nivel,
+  })
+  .then(() => {
+    console.log("✅ Avaliação guardada com sucesso");
+  })
+  .catch((err) => {
+    console.error("❌ Erro ao guardar avaliação:", err);
+  });
+}, []);
+
+
+  // 🔐 Só agora (depois dos hooks) fazemos o redirect
+  if (!respostas) {
+    return <Navigate to="/formulario" replace />;
+  }
 
   return (
     <div>
@@ -55,29 +89,23 @@ export default function AvaliacaoPage() {
           ambientes web.
         </p>
 
+        {/* ✅ NOVO: Resultado ao utilizador com base APENAS nas imagens */}
         <div className="bg-red-50 border border-red-300 p-6 rounded-lg text-left">
           <h2 className="text-xl font-semibold mb-4">
-            Avaliação preliminar
+            Resultado da avaliação
           </h2>
 
-          <p className="mb-4">
-            Com base nas suas respostas ao questionário e nos padrões de
-            interação observados durante a utilização do rato (como cliques,
-            pausas e movimentos), foram identificados alguns indicadores que
-            poderão justificar uma atenção acrescida ao seu bem-estar
-            psicológico.
+          <p className="mb-2">
+            <strong>{resultado?.nivel}</strong>
           </p>
 
           <p className="mb-4">
-            Este resultado <strong>não constitui um diagnóstico médico</strong>.
-            No entanto, caso se identifique com esta descrição ou sinta algum
-            desconforto emocional, recomenda-se a procura de um profissional de
-            saúde qualificado.
+            {resultado?.descricao}
           </p>
 
           <p className="text-sm text-gray-600">
-            Nota: Esta avaliação baseia-se em modelos experimentais e será
-            refinada à medida que o estudo evoluir.
+            Nota: Este resultado baseia-se exclusivamente nas imagens selecionadas
+            durante o questionário e não constitui um diagnóstico clínico.
           </p>
         </div>
       </div>
