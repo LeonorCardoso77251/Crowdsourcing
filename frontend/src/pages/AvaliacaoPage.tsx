@@ -4,32 +4,40 @@ import { api } from "../api/api";
 import { useBehavioralTracking } from "../hooks/useBehavioralTracking";
 
 export default function AvaliacaoPage() {
-   // continua a recolher enquanto esta página está aberta
+
+  // Continua a recolher logs enquanto a página está aberta
   useBehavioralTracking();
-  // termina o estudo quando a página carrega
-useEffect(() => {
-  const logs = localStorage.getItem("behaviorLogs");
-  const userId = localStorage.getItem("userId");
 
-  if (logs && userId) {
-    api.post("/relatorios/behavioral", {
-      userId: Number(userId),
-      logs: JSON.parse(logs),
-    })
-    .then(() => {
-      console.log("✅ Logs comportamentais enviados para o backend");
-    })
-    .catch(err => {
-      console.error("❌ Erro ao enviar logs:", err);
-    });
+  // Enviar logs e terminar o estudo
+  useEffect(() => {
+    const logs = localStorage.getItem("behaviorLogs");
+    const idUtilizador = localStorage.getItem("idUtilizador");
 
-    // limpar estado
-    localStorage.removeItem("studyActive");
-    localStorage.removeItem("behaviorLogs");
-    localStorage.removeItem("studyStartTime");
-    localStorage.removeItem("formularioId");
-  }
-}, []);
+    if (!idUtilizador) {
+      console.error("❌ idUtilizador não encontrado");
+      return;
+    }
+
+    if (logs) {
+      console.log("📤 A enviar logs comportamentais para o backend");
+
+      api.post("/relatorios/behavioral", {
+        userId: Number(idUtilizador),
+        logs: JSON.parse(logs),
+      })
+      .then(() => {
+        console.log("✅ Logs comportamentais enviados com sucesso");
+
+        // 🔚 Terminar estudo
+        localStorage.removeItem("behaviorLogs");
+        localStorage.removeItem("studyActive");
+
+      })
+      .catch((err) => {
+        console.error("❌ Erro ao enviar logs:", err);
+      });
+    }
+  }, []);
 
   return (
     <div>

@@ -6,6 +6,7 @@ import AvaliacaoPage from "../pages/AvaliacaoPage"; // 🔴 NOVO
 import DashboardPage from "../pages/DashboardPage";
 import ImportarCSVPage from "../pages/ImportarCSVPage";
 import LoginPage from "../pages/LoginPage";
+import StudyForm from "../pages/StudyForm";
 
 import { isAdminLoggedIn } from "../utils/auth";
 
@@ -15,6 +16,7 @@ export default function AppRouter() {
       <Routes>
         {/* Rotas públicas */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/study" element={<StudyForm />} />
         <Route path="/formulario" element={<FormularioPage />} />
         <Route path="/avaliacao" element={<AvaliacaoPage />} /> {/* 🔴 NOVA */}
         <Route path="/login" element={<LoginPage />} />

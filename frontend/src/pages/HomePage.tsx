@@ -10,17 +10,17 @@ export default function HomePage() {
 
     try {
       const response = await api.post("/utilizadores/anonimo");
-      const userId = response.data.idUtilizador;
 
-      // guardar info do estudo
-      localStorage.setItem("userId", userId.toString());
+      const idUtilizador = response.data.idUtilizador;
+
+      // 🔑 guardar o ID REAL gerado pelo backend
+      localStorage.setItem("idUtilizador", idUtilizador.toString());
       localStorage.setItem("studyActive", "true");
       localStorage.setItem("studyStartTime", Date.now().toString());
 
-      console.log("🟢 Estudo iniciado");
+      console.log("🟢 Estudo iniciado → ID Utilizador:", idUtilizador);
 
-      // 👉 navegar dentro da app
-      navigate("/formulario");
+      navigate("/study");
 
     } catch (error) {
       console.error("❌ Erro ao iniciar participação:", error);
