@@ -1,230 +1,337 @@
-import { useEffect, useState, useMemo } from "react";
-import { obterUtilizadores, api } from "../api/api";
+import { useEffect, useMemo, useState } from "react";
 import AdminNavbar from "../components/AdminNavbar";
+import { obterUtilizadores, obterAvaliacoes, obterRelatorios } from "../api/api";
 
-import { Pie } from "react-chartjs-2";
+import { Pie, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
-  Legend
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
 } from "chart.js";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
 
-// =====================
-// TIPOS
-// =====================
+// =======================
+// TIPOS (ALINHADOS COM O BACKEND)
+// =======================
 type Utilizador = {
   idUtilizador: number;
-  idadeFaixa: string | null;
   genero: string | null;
+  idadeFaixa: string | null;
 };
 
-type Resposta = {
-  resposta1: string | null;
-  resposta2: string | null;
-  resposta3: string | null;
+type Avaliacao = {
+  idAvaliacao: number;
+  scoreTotal: number;
+  nivel: string;
+  utilizador: {
+    idUtilizador: number;
+    genero: string | null;
+    idadeFaixa: string | null;
+  };
 };
 
-// =====================
-// COMPONENTE PRINCIPAL
-// =====================
+type Relatorio = {
+  idRelatorio: number;
+  totalMensagens: number | null;
+  behavioralLogs: Record<string, unknown> | null;
+  dataCriacao: string;
+  utilizador: {
+    idUtilizador: number;
+    genero: string | null;
+    idadeFaixa: string | null;
+  };
+};
+
+// =======================
+// COMPONENTE
+// =======================
 export default function DashboardPage() {
   const [utilizadores, setUtilizadores] = useState<Utilizador[]>([]);
-  const [respostas, setRespostas] = useState<Resposta[]>([]);
+  const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
+  const [relatorios, setRelatorios] = useState<Relatorio[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔵 Filtros demográficos
+  // 🔵 Filtros (os teus + 1 novo)
   const [filtroGenero, setFiltroGenero] = useState("Todos");
   const [filtroFaixa, setFiltroFaixa] = useState("Todos");
+  const [apenasComRelatorio, setApenasComRelatorio] = useState(false);
 
-  // 🔵 Filtros das perguntas
-  const [filtroP1, setFiltroP1] = useState("Todos");
-  const [filtroP2, setFiltroP2] = useState("Todos");
-  const [filtroP3, setFiltroP3] = useState("Todos");
-
-  // 🔵 LISTAS FIXAS DE IMAGENS (APARECEM SEMPRE NOS FILTROS)
-  const imagensP1 = [
-    "/img/img1.png",
-    "/img/img2.png",
-    "/img/img3.png",
-    "/img/img4.png",
-    "/img/img5.png",
-    "/img/img6.png"
-  ];
-
-  const imagensP2 = [
-    "/img/img4.png",
-    "/img/img1.png",
-    "/img/img6.png",
-    "/img/img2.png",
-    "/img/img5.png",
-    "/img/img3.png"
-  ];
-
-  const imagensP3 = [
-    "/img/img2.png",
-    "/img/img5.png",
-    "/img/img1.png",
-    "/img/img6.png",
-    "/img/img3.png",
-    "/img/img4.png"
-  ];
-
-  // Só para aparecer "Imagem 1", etc.
-  function labelImagem(path: string): string {
-    const match = path.match(/img(\d+)\./);
-    return match ? `Imagem ${match[1]}` : path;
-  }
-
-  // ============================
+  // =======================
   // 🔵 CARREGAR DADOS
-  // ============================
+  // =======================
   useEffect(() => {
     const carregar = async () => {
       try {
         const users = await obterUtilizadores();
-        const resp = await api.get("/respostas");
+        const avs = await obterAvaliacoes();
+        const rels = await obterRelatorios();
 
         setUtilizadores(users);
-        setRespostas(resp.data);
-      } catch (error) {
-        console.error("Erro ao carregar dados:", error);
+        setAvaliacoes(avs);
+        setRelatorios(rels);
+      } catch (e) {
+        console.error("Erro ao carregar dados:", e);
       } finally {
         setLoading(false);
       }
     };
+
     carregar();
   }, []);
 
-  // ============================
-  // 🔵 FILTROS DEMOGRÁFICOS (GRÁFICOS DE UTILIZADORES)
-  // ============================
+  // =======================
+  // 🔵 FAIXAS ETÁRIAS DINÂMICAS
+  // =======================
+  const faixasDisponiveis = useMemo(() => {
+    const set = new Set<string>();
+    utilizadores.forEach((u) => {
+      if (u.idadeFaixa) set.add(u.idadeFaixa);
+    });
+    return Array.from(set);
+  }, [utilizadores]);
 
-  const faixas = [
-    "18 a 25 anos",
-    "26 a 35 anos",
-    "36 a 45 anos",
-    "46 a 55 anos",
-    "56+ anos"
-  ];
+  // =======================
+  // 🔵 UTILIZADORES FILTRADOS (EXTENDIDO, NÃO ALTERADO)
+  // =======================
+  const utilizadoresFiltrados = useMemo(() => {
+    const idsComRelatorio = new Set(
+      relatorios.map((r) => r.utilizador.idUtilizador)
+    );
 
-  const utilizadoresParaFaixas = useMemo(() => {
-    return filtroFaixa === "Todos"
-      ? utilizadores
-      : utilizadores.filter((u) => u.idadeFaixa === filtroFaixa);
-  }, [utilizadores, filtroFaixa]);
+    return utilizadores.filter((u) => {
+      const genero = u.genero ?? "Não informado";
+      const okGenero = filtroGenero === "Todos" || genero === filtroGenero;
+      const okFaixa = filtroFaixa === "Todos" || u.idadeFaixa === filtroFaixa;
+      const okRelatorio =
+        !apenasComRelatorio || idsComRelatorio.has(u.idUtilizador);
 
-  const faixasCount = faixas.map(
-    (f) => utilizadoresParaFaixas.filter((u) => u.idadeFaixa === f).length
-  );
+      return okGenero && okFaixa && okRelatorio;
+    });
+  }, [
+    utilizadores,
+    filtroGenero,
+    filtroFaixa,
+    apenasComRelatorio,
+    relatorios,
+  ]);
 
-  const dadosFaixas = {
-    labels: faixas,
-    datasets: [
-      {
-        data: faixasCount,
-        backgroundColor: ["#4A90E2", "#50E3C2", "#B8E986", "#F8E71C", "#D0021B"]
-      }
-    ]
-  };
+  const idsUtilizadoresFiltrados = useMemo(() => {
+    return new Set(utilizadoresFiltrados.map((u) => u.idUtilizador));
+  }, [utilizadoresFiltrados]);
 
-  const utilizadoresParaGeneros = useMemo(() => {
-    return filtroGenero === "Todos"
-      ? utilizadores
-      : utilizadores.filter(
-          (u) => (u.genero ?? "Não informado") === filtroGenero
-        );
-  }, [utilizadores, filtroGenero]);
+  // =======================
+  // 🔵 KPIs
+  // =======================
+  const totalUtilizadores = utilizadores.length;
+  const totalAvaliacoes = avaliacoes.length;
+  const totalRelatorios = relatorios.length;
 
-  const generosCount = {
-    Feminino: 0,
-    Masculino: 0,
-    Outro: 0,
-    "Não informado": 0
-  };
+  const percentagemScoreAlto = useMemo(() => {
+    if (avaliacoes.length === 0) return 0;
+    const altos = avaliacoes.filter((a) => a.scoreTotal > 4).length;
+    return Math.round((altos / avaliacoes.length) * 100);
+  }, [avaliacoes]);
 
-utilizadoresParaGeneros.forEach((u) => {
-  const genero = (u.genero ?? "Não informado") as keyof typeof generosCount;
-  generosCount[genero]++;
-});
+  // =======================
+  // 🔵 MÉTRICAS COMPORTAMENTAIS
+  // =======================
+  const relatoriosComLogs = useMemo(() => {
+    return relatorios.filter(
+      (r) => r.behavioralLogs && Object.keys(r.behavioralLogs).length > 0
+    ).length;
+  }, [relatorios]);
 
-  const dadosGeneros = {
-    labels: Object.keys(generosCount),
-    datasets: [
-      {
-        data: Object.values(generosCount),
-        backgroundColor: ["#BD10E0", "#7ED321", "#F5A623", "#4A90E2"]
-      }
-    ]
-  };
+  const scoreMedioComRelatorio = useMemo(() => {
+    const ids = new Set(relatorios.map((r) => r.utilizador.idUtilizador));
+    const scores = avaliacoes
+      .filter((a) => ids.has(a.utilizador.idUtilizador))
+      .map((a) => a.scoreTotal);
 
-  // ============================
-  // 🔵 CONTAGEM DAS RESPOSTAS (COM FILTRO POR PERGUNTA)
-  // ============================
-  function contarRespostas(
-    campo: keyof Resposta,
-    filtroImagem: string
-  ): Record<string, number> {
-    const contagem: Record<string, number> = {};
+    if (scores.length === 0) return "0.00";
+    return (
+      scores.reduce((acc, v) => acc + v, 0) / scores.length
+    ).toFixed(2);
+  }, [avaliacoes, relatorios]);
 
-    respostas.forEach((r) => {
-      const valor = r[campo];
-      if (!valor) return;
+  // =======================
+  // 🔵 RELATÓRIOS POR MÊS
+  // =======================
+  const dadosRelatoriosPorMes = useMemo(() => {
+    const cont: Record<string, number> = {};
 
-      if (filtroImagem !== "Todos" && valor !== filtroImagem) return;
-
-      contagem[valor] = (contagem[valor] || 0) + 1;
+    relatorios.forEach((r) => {
+      const mes = r.dataCriacao.slice(0, 7); // YYYY-MM
+      cont[mes] = (cont[mes] || 0) + 1;
     });
 
-    return contagem;
-  }
+    return {
+      labels: Object.keys(cont),
+      datasets: [
+        {
+          label: "Relatórios",
+          data: Object.values(cont),
+          backgroundColor: "#4A90E2",
+        },
+      ],
+    };
+  }, [relatorios]);
 
-  const dadosPergunta1 = {
-    labels: Object.keys(contarRespostas("resposta1", filtroP1)),
-    datasets: [
-      {
-        data: Object.values(contarRespostas("resposta1", filtroP1)),
-        backgroundColor: ["#4A90E2", "#50E3C2", "#D0021B", "#F8E71C", "#7ED321", "#BD10E0"]
-      }
-    ]
-  };
+  // =======================
+  // 🔵 GRÁFICOS ORIGINAIS (INTOCADOS)
+  // =======================
+  const dadosFaixas = useMemo(() => {
+    const contagem: Record<string, number> = {};
 
-  const dadosPergunta2 = {
-    labels: Object.keys(contarRespostas("resposta2", filtroP2)),
-    datasets: [
-      {
-        data: Object.values(contarRespostas("resposta2", filtroP2)),
-        backgroundColor: ["#BD10E0", "#7ED321", "#4A90E2", "#F5A623", "#50E3C2", "#D0021B"]
-      }
-    ]
-  };
+    utilizadoresFiltrados.forEach((u) => {
+      const faixa = u.idadeFaixa ?? "Não informado";
+      contagem[faixa] = (contagem[faixa] || 0) + 1;
+    });
 
-  const dadosPergunta3 = {
-    labels: Object.keys(contarRespostas("resposta3", filtroP3)),
-    datasets: [
-      {
-        data: Object.values(contarRespostas("resposta3", filtroP3)),
-        backgroundColor: ["#F8E71C", "#4A90E2", "#50E3C2", "#BD10E0", "#D0021B", "#7ED321"]
-      }
-    ]
-  };
+    return {
+      labels: Object.keys(contagem),
+      datasets: [
+        {
+          data: Object.values(contagem),
+          backgroundColor: [
+            "#4A90E2",
+            "#50E3C2",
+            "#B8E986",
+            "#F8E71C",
+            "#D0021B",
+            "#BD10E0",
+          ],
+        },
+      ],
+    };
+  }, [utilizadoresFiltrados]);
 
-  // ============================
+  const dadosGeneros = useMemo(() => {
+    const cont: Record<string, number> = {
+      Feminino: 0,
+      Masculino: 0,
+      Outro: 0,
+      "Não informado": 0,
+    };
+
+    utilizadoresFiltrados.forEach((u) => {
+      const g = u.genero ?? "Não informado";
+      cont[g] = (cont[g] || 0) + 1;
+    });
+
+    return {
+      labels: Object.keys(cont),
+      datasets: [
+        {
+          data: Object.values(cont),
+          backgroundColor: ["#BD10E0", "#7ED321", "#F5A623", "#4A90E2"],
+        },
+      ],
+    };
+  }, [utilizadoresFiltrados]);
+
+  const dadosNivel = useMemo(() => {
+    const cont: Record<string, number> = {};
+
+    avaliacoes.forEach((a) => {
+      const uid = a.utilizador.idUtilizador;
+      if (!idsUtilizadoresFiltrados.has(uid)) return;
+      cont[a.nivel] = (cont[a.nivel] || 0) + 1;
+    });
+
+    return {
+      labels: Object.keys(cont),
+      datasets: [
+        {
+          data: Object.values(cont),
+          backgroundColor: ["#D0021B", "#F5A623", "#7ED321", "#4A90E2"],
+        },
+      ],
+    };
+  }, [avaliacoes, idsUtilizadoresFiltrados]);
+
+  const dadosScore = useMemo(() => {
+    const cont = { Baixo: 0, Médio: 0, Alto: 0 };
+
+    avaliacoes.forEach((a) => {
+      const uid = a.utilizador.idUtilizador;
+      if (!idsUtilizadoresFiltrados.has(uid)) return;
+
+      if (a.scoreTotal <= 2) cont.Baixo++;
+      else if (a.scoreTotal <= 4) cont.Médio++;
+      else cont.Alto++;
+    });
+
+    return {
+      labels: Object.keys(cont),
+      datasets: [
+        {
+          data: Object.values(cont),
+          backgroundColor: ["#D0021B", "#F8E71C", "#7ED321"],
+        },
+      ],
+    };
+  }, [avaliacoes, idsUtilizadoresFiltrados]);
+
+  const dadosRelatorios = useMemo(() => {
+    const comRelatorio = relatorios.filter((r) =>
+      idsUtilizadoresFiltrados.has(r.utilizador.idUtilizador)
+    ).length;
+
+    const total = utilizadoresFiltrados.length;
+    const semRelatorio = Math.max(total - comRelatorio, 0);
+
+    return {
+      labels: ["Com Relatório", "Sem Relatório"],
+      datasets: [
+        {
+          data: [comRelatorio, semRelatorio],
+          backgroundColor: ["#4A90E2", "#B8E986"],
+        },
+      ],
+    };
+  }, [relatorios, idsUtilizadoresFiltrados, utilizadoresFiltrados.length]);
+
+  // =======================
   // 🔵 RENDER
-  // ============================
+  // =======================
   return (
     <>
       <AdminNavbar />
 
       <div className="p-10">
-        <h1 className="text-3xl font-bold mb-6">Dashboard — Estatísticas</h1>
+        <h1 className="text-3xl font-bold mb-2">
+          Dashboard — Estatísticas do Sistema
+        </h1>
 
-        {/* FILTROS DEMOGRÁFICOS */}
+        <p className="text-gray-600 mb-6">
+          Estatísticas agregadas e anonimizadas recolhidas no âmbito do estudo
+          experimental de análise comportamental e avaliação de bem-estar.
+        </p>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+          <KPI titulo="Utilizadores" valor={totalUtilizadores} />
+          <KPI titulo="Avaliações" valor={totalAvaliacoes} />
+          <KPI titulo="Relatórios" valor={totalRelatorios} />
+          <KPI titulo="% Score Alto" valor={`${percentagemScoreAlto}%`} />
+        </div>
+
+        {/* FILTROS (OS TEUS + 1 NOVO) */}
         <div className="flex flex-wrap gap-6 mb-10">
           <div>
-            <label className="font-semibold block mb-2">Filtrar Género:</label>
+            <label className="font-semibold block mb-2">Género</label>
             <select
               value={filtroGenero}
               onChange={(e) => setFiltroGenero(e.target.value)}
@@ -239,107 +346,126 @@ utilizadoresParaGeneros.forEach((u) => {
           </div>
 
           <div>
-            <label className="font-semibold block mb-2">Filtrar Faixa Etária:</label>
+            <label className="font-semibold block mb-2">Faixa Etária</label>
             <select
               value={filtroFaixa}
               onChange={(e) => setFiltroFaixa(e.target.value)}
               className="border p-2 rounded"
             >
               <option>Todos</option>
-              {faixas.map((f) => (
+              {faixasDisponiveis.map((f) => (
                 <option key={f}>{f}</option>
               ))}
             </select>
           </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={apenasComRelatorio}
+              onChange={(e) => setApenasComRelatorio(e.target.checked)}
+            />
+            <label>Apenas com relatório</label>
+          </div>
         </div>
 
-        {/* GRÁFICOS DEMOGRÁFICOS */}
-        {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
-            <div className="bg-white p-6 shadow-md rounded">
-              <h2 className="text-xl font-semibold mb-4">Distribuição por Faixa Etária</h2>
-              <Pie data={dadosFaixas} />
+        {loading ? (
+          <p>A carregar dados…</p>
+        ) : (
+          <>
+            {/* GRÁFICOS ORIGINAIS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
+              <div className="bg-white p-6 shadow rounded">
+                <h2 className="font-semibold mb-4">Faixa Etária</h2>
+                <Pie data={dadosFaixas} />
+              </div>
+
+              <div className="bg-white p-6 shadow rounded">
+                <h2 className="font-semibold mb-4">Género</h2>
+                <Pie data={dadosGeneros} />
+              </div>
             </div>
 
-            <div className="bg-white p-6 shadow-md rounded">
-              <h2 className="text-xl font-semibold mb-4">Distribuição por Género</h2>
-              <Pie data={dadosGeneros} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+              <div className="bg-white p-6 shadow rounded">
+                <h2 className="font-semibold mb-4">Nível</h2>
+                <Pie data={dadosNivel} />
+              </div>
+
+              <div className="bg-white p-6 shadow rounded">
+                <h2 className="font-semibold mb-4">Score</h2>
+                <Pie data={dadosScore} />
+              </div>
+
+              <div className="bg-white p-6 shadow rounded">
+                <h2 className="font-semibold mb-4">Relatórios</h2>
+                <Pie data={dadosRelatorios} />
+              </div>
             </div>
-          </div>
+
+            {/* NOVA SECÇÃO */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
+              <div className="bg-white p-6 shadow rounded">
+                <h2 className="font-semibold mb-4">Relatórios por Mês</h2>
+                <Bar data={dadosRelatoriosPorMes} />
+              </div>
+
+              <div className="bg-white p-6 shadow rounded">
+                <h2 className="font-semibold mb-4">
+                  Indicadores Comportamentais
+                </h2>
+                <ul className="list-disc ml-6 space-y-2">
+                  <li>
+                    Relatórios com logs: <b>{relatoriosComLogs}</b>
+                  </li>
+                  <li>
+                    Score médio (com relatório):{" "}
+                    <b>{scoreMedioComRelatorio}</b>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* TABELA ORIGINAL */}
+            <p className="mb-3">
+              A mostrar <b>{utilizadoresFiltrados.length}</b> utilizadores.
+            </p>
+
+            <table className="w-full border border-gray-400">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="border p-2">ID</th>
+                  <th className="border p-2">Faixa Etária</th>
+                  <th className="border p-2">Género</th>
+                </tr>
+              </thead>
+              <tbody>
+                {utilizadoresFiltrados.map((u) => (
+                  <tr key={u.idUtilizador} className="text-center">
+                    <td className="border p-2">{u.idUtilizador}</td>
+                    <td className="border p-2">{u.idadeFaixa ?? "—"}</td>
+                    <td className="border p-2">
+                      {u.genero ?? "Não informado"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
-
-        {/* FILTROS DAS PERGUNTAS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-6">
-          <div>
-            <label className="font-semibold block mb-2">Pergunta 1 — Filtrar Imagem</label>
-            <select value={filtroP1} onChange={(e) => setFiltroP1(e.target.value)} className="border p-2 rounded w-full">
-              <option value="Todos">Todos</option>
-              {imagensP1.map((img) => (
-                <option key={img} value={img}>{labelImagem(img)}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="font-semibold block mb-2">Pergunta 2 — Filtrar Imagem</label>
-            <select value={filtroP2} onChange={(e) => setFiltroP2(e.target.value)} className="border p-2 rounded w-full">
-              <option value="Todos">Todos</option>
-              {imagensP2.map((img) => (
-                <option key={img} value={img}>{labelImagem(img)}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="font-semibold block mb-2">Pergunta 3 — Filtrar Imagem</label>
-            <select value={filtroP3} onChange={(e) => setFiltroP3(e.target.value)} className="border p-2 rounded w-full">
-              <option value="Todos">Todos</option>
-              {imagensP3.map((img) => (
-                <option key={img} value={img}>{labelImagem(img)}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* GRÁFICOS DAS PERGUNTAS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
-          <div className="bg-white p-6 shadow-md rounded">
-            <h2 className="text-xl font-semibold mb-4">Pergunta 1 — Mobilidade</h2>
-            <Pie data={dadosPergunta1} />
-          </div>
-
-          <div className="bg-white p-6 shadow-md rounded">
-            <h2 className="text-xl font-semibold mb-4">Pergunta 2 — Autoavaliação</h2>
-            <Pie data={dadosPergunta2} />
-          </div>
-
-          <div className="bg-white p-6 shadow-md rounded">
-            <h2 className="text-xl font-semibold mb-4">Pergunta 3 — Movimento Natural</h2>
-            <Pie data={dadosPergunta3} />
-          </div>
-        </div>
-
-        {/* TABELA */}
-        <table className="w-full border-collapse border border-gray-400">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="border p-2">ID</th>
-              <th className="border p-2">Faixa Etária</th>
-              <th className="border p-2">Género</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {utilizadores.map((u) => (
-              <tr key={u.idUtilizador} className="text-center">
-                <td className="border p-2">{u.idUtilizador}</td>
-                <td className="border p-2">{u.idadeFaixa ?? "—"}</td>
-                <td className="border p-2">{u.genero ?? "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </>
+  );
+}
+
+// =======================
+// 🔵 KPI COMPONENT
+// =======================
+function KPI({ titulo, valor }: { titulo: string; valor: number | string }) {
+  return (
+    <div className="bg-white p-6 shadow rounded text-center">
+      <p className="text-gray-500">{titulo}</p>
+      <p className="text-3xl font-bold">{valor}</p>
+    </div>
   );
 }

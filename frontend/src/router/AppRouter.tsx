@@ -7,6 +7,7 @@ import DashboardPage from "../pages/DashboardPage";
 import ImportarCSVPage from "../pages/ImportarCSVPage";
 import LoginPage from "../pages/LoginPage";
 import StudyForm from "../pages/StudyForm";
+import BehavioralDashboardPage from "../pages/BehavioralDashboardPage";
 
 import { isAdminLoggedIn } from "../utils/auth";
 
@@ -20,6 +21,11 @@ export default function AppRouter() {
         <Route path="/formulario" element={<FormularioPage />} />
         <Route path="/avaliacao" element={<AvaliacaoPage />} /> {/* 🔴 NOVA */}
         <Route path="/login" element={<LoginPage />} />
+        <Route
+  path="/dashboard/behavioral"
+  element={<BehavioralDashboardPage />}
+/>
+
 
         {/* Rotas protegidas */}
         <Route

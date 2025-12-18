@@ -123,27 +123,27 @@ navigate("/avaliacao", {
     "/img/img1.png",
     "/img/img2.png",
     "/img/img3.png",
-    "/img/img4.png",
+    "/img/img9.png",
     "/img/img5.png",
     "/img/img6.png",
   ];
 
   const imagensPergunta2 = [
-    "/img/img7.png",
-    "/img/img1.png",
-    "/img/img6.png",
-    "/img/img2.png",
-    "/img/img5.png",
-    "/img/img10.png",
+  "/img/img1.png",  // nível 0
+  "/img/img6.png",  // nível 1
+  "/img/img2.png",  // nível 2
+  "/img/img5.png",  // nível 2
+  "/img/img9.png",  // nível 3
+  "/img/img10.png", // nível 3
   ];
 
   const imagensPergunta3 = [
-    "/img/img2.png",
-    "/img/img5.png",
-    "/img/img1.png",
-    "/img/img9.png",
-    "/img/img8.png",
-    "/img/img4.png",
+  "/img/img4.png", // nível 0
+  "/img/img6.png", // nível 1
+  "/img/img2.png", // nível 2
+  "/img/img5.png", // nível 2
+  "/img/img9.png", // nível 3
+  "/img/img1.png", // nível 0
   ];
 
   // =============================
@@ -161,20 +161,22 @@ navigate("/avaliacao", {
         {/* INSTRUÇÕES */}
         <div className="bg-red-50 border border-red-300 p-4 rounded-lg mb-8">
           <p className="text-gray-700">
-            <strong>Instruções:</strong> Observe atentamente as imagens
-            apresentadas e escolha a que considera mais adequada a cada
-            questão.
+            <strong>Instruções:</strong> 
+Nesta página serão apresentadas várias imagens que representam diferentes formas de movimento do rato no ecrã durante o preenchimento de um questionário.
+Observe atentamente cada imagem, tendo em conta o percurso realizado, a quantidade de desvios e a continuidade ou irregularidade das linhas.
+Escolha sempre a imagem que melhor corresponde à pergunta apresentada, de acordo com a sua perceção.
+
           </p>
         </div>
 
         {/* PERGUNTA 1 */}
         <div className="bg-red-50 border border-red-300 p-6 rounded-lg mb-8">
           <h2 className="text-xl font-semibold mb-4">
-            Pergunta 1 – Identificação da imagem com maior mobilidade
+            Pergunta 1 – Perceção visual do movimento
           </h2>
 
           <p className="mb-4">
-            Qual destas imagens considera que representa maior mobilidade?
+  Qual das imagens considera que apresenta um movimento do rato mais intenso ou agitado?
           </p>
 
           <div className="grid grid-cols-2 gap-4">
@@ -191,7 +193,17 @@ navigate("/avaliacao", {
                 <img
                   src={img}
                   alt={`opcao-${index}`}
-                  className="max-w-full max-h-full object-contain rounded hover:scale-105 transition"
+                  className="
+  max-w-full 
+  max-h-full 
+  object-contain 
+  rounded 
+  transition 
+  duration-300 
+  ease-in-out
+  hover:scale-125
+"
+
                 />
               </div>
             ))}
@@ -201,11 +213,11 @@ navigate("/avaliacao", {
         {/* PERGUNTA 2 */}
         <div className="bg-red-50 border border-red-300 p-6 rounded-lg mb-8">
           <h2 className="text-xl font-semibold mb-4">
-            Pergunta 2 – Autoavaliação de movimento
+            Pergunta 2 – Autoavaliação momentânea
           </h2>
 
           <p className="mb-4">
-            Qual das imagens considera que melhor representa o seu movimento?
+            Qual das imagens considera que melhor representa a forma como está a movimentar o rato neste momento?
           </p>
 
           <div className="grid grid-cols-2 gap-4">
@@ -222,7 +234,17 @@ navigate("/avaliacao", {
                 <img
                   src={img}
                   alt={`opcao-${index}`}
-                  className="max-w-full max-h-full object-contain rounded hover:scale-105 transition"
+                  className="
+  max-w-full 
+  max-h-full 
+  object-contain 
+  rounded 
+  transition 
+  duration-300 
+  ease-in-out
+  hover:scale-125
+"
+
                 />
               </div>
             ))}
@@ -232,12 +254,11 @@ navigate("/avaliacao", {
         {/* PERGUNTA 3 */}
         <div className="bg-red-50 border border-red-300 p-6 rounded-lg mb-8">
           <h2 className="text-xl font-semibold mb-4">
-            Pergunta 3 – Perceção habitual do movimento
+            Pergunta 3 –  Perceção habitual do movimento
           </h2>
 
-          <p className="mb-4">
-            Respondendo com honestidade, qual das imagens considera que representa
-            a forma como normalmente movimenta o seu rato no computador?
+          <p className="mb-4"> 
+            Pensando no seu dia a dia, qual das imagens considera que melhor representa a forma como normalmente movimenta o rato no computador?
           </p>
 
           <div className="grid grid-cols-2 gap-4">
@@ -254,7 +275,17 @@ navigate("/avaliacao", {
                 <img
                   src={img}
                   alt={`opcao-${index}`}
-                  className="max-w-full max-h-full object-contain rounded hover:scale-105 transition"
+                 className="
+  max-w-full 
+  max-h-full 
+  object-contain 
+  rounded 
+  transition 
+  duration-300 
+  ease-in-out
+  hover:scale-125
+"
+
                 />
               </div>
             ))}

@@ -43,29 +43,31 @@ export function calcularAvaliacao(respostas: {
     scoreImagem(respostas.pergunta2) +
     scoreImagem(respostas.pergunta3);
 
+  // 🔹 Baixa ativação comportamental
   if (scoreTotal <= 2) {
     return {
       scoreTotal,
       nivel: "Baixa ativação comportamental",
       descricao:
-        "O seu padrão de movimento percebido apresenta baixa intensidade e boa estabilidade.",
+        "Com base nas imagens selecionadas, o seu padrão de interação caracteriza-se por movimentos do rato mais simples e controlados, com trajetos relativamente regulares. Este resultado sugere uma forma de interação mais estável e previsível com a interface durante o questionário.",
     };
   }
 
+  // 🔹 Ativação comportamental moderada
   if (scoreTotal <= 5) {
     return {
       scoreTotal,
       nivel: "Ativação comportamental moderada",
       descricao:
-        "O seu padrão de movimento percebido apresenta alguma irregularidade e intensidade.",
+        "As imagens escolhidas indicam um padrão de movimento do rato com alguma variação, alternando entre momentos mais controlados e outros com maior mudança de direção. Este resultado reflete um nível intermédio de ativação comportamental durante a interação com o questionário.",
     };
   }
 
+  // 🔹 Ativação comportamental elevada
   return {
     scoreTotal,
     nivel: "Ativação comportamental elevada",
     descricao:
-      "O seu padrão de movimento percebido apresenta elevada intensidade e irregularidade.",
+      "De acordo com as imagens selecionadas, o padrão de movimento do rato apresenta maior irregularidade e diversidade de trajetos. Este resultado indica uma interação mais dinâmica com a interface durante o preenchimento do questionário.",
   };
 }
-

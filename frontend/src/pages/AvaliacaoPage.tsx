@@ -9,63 +9,54 @@ export default function AvaliacaoPage() {
   // Continua a recolher logs enquanto a página está aberta
   useBehavioralTracking();
 
-  // 🔹 Obter respostas vindas do formulário (via navigate state)
+  // 🔹 Obter respostas vindas do formulário
   const location = useLocation();
   const respostas = location.state?.respostas;
 
-  // ✅ Calcula resultado só se houver respostas (sem crashes)
+  // ✅ Calcula resultado só se houver respostas
   const resultado = respostas ? calcularAvaliacao(respostas) : null;
 
-  // Enviar logs e terminar o estudo (mantido igual ao teu)
- useEffect(() => {
-  if (!resultado) return;
+  // 🔹 Guardar avaliação
+  useEffect(() => {
+    if (!resultado) return;
 
-  const idUtilizador = localStorage.getItem("idUtilizador");
-  const idFormulario = localStorage.getItem("formularioId");
+    const idUtilizador = localStorage.getItem("idUtilizador");
+    const idFormulario = localStorage.getItem("formularioId");
 
-  if (!idUtilizador || !idFormulario) {
-    console.error("❌ idUtilizador ou idFormulario em falta");
-    return;
-  }
+    if (!idUtilizador || !idFormulario) {
+      console.error("❌ idUtilizador ou idFormulario em falta");
+      return;
+    }
 
-  console.log("📤 A enviar avaliação para o backend");
+    api.post("/avaliacoes", {
+      idUtilizador: Number(idUtilizador),
+      idFormulario: Number(idFormulario),
+      scoreTotal: resultado.scoreTotal,
+      nivel: resultado.nivel,
+    })
+    .then(() => {
+      console.log("✅ Avaliação guardada com sucesso");
+    })
+    .catch((err) => {
+      console.error("❌ Erro ao guardar avaliação:", err);
+    });
 
-  api.post("/avaliacoes", {
-    idUtilizador: Number(idUtilizador),
-    idFormulario: Number(idFormulario),
-    scoreTotal: resultado.scoreTotal,
-    nivel: resultado.nivel,
-  })
-  .then(() => {
-    console.log("✅ Avaliação guardada com sucesso");
-  })
-  .catch((err) => {
-    console.error("❌ Erro ao guardar avaliação:", err);
-  });
+  }, [resultado]);
 
-}, [resultado]); // 🔥 ISTO É A CHAVE
+  // 🔹 Guardar logs comportamentais
+  useEffect(() => {
+    const logs = localStorage.getItem("behaviorLogs");
+    const idUtilizador = localStorage.getItem("idUtilizador");
 
-  // 🔹 Guardar resultado da avaliação no backend
- // 🔹 Guardar avaliação (CORRIGIDO)
-useEffect(() => {
-  const logs = localStorage.getItem("behaviorLogs");
-  const idUtilizador = localStorage.getItem("idUtilizador");
+    if (!idUtilizador || !logs) return;
 
-  if (!idUtilizador || !logs) {
-    return;
-  }
-
-  console.log("📤 A enviar logs comportamentais para o backend");
-
-  api
-    .post("/relatorios/behavioral", {
+    api.post("/relatorios/behavioral", {
       userId: Number(idUtilizador),
       logs: JSON.parse(logs),
     })
     .then(() => {
       console.log("✅ Relatório criado / atualizado com sucesso");
 
-      // 🔒 LIMPEZA SÓ DEPOIS DO RELATÓRIO EXISTIR
       localStorage.removeItem("behaviorLogs");
       localStorage.removeItem("studyActive");
       localStorage.removeItem("formularioId");
@@ -77,12 +68,9 @@ useEffect(() => {
         console.error("❌ Erro ao enviar logs:", err);
       }
     });
-}, []);
+  }, []);
 
-
-
-
-  // 🔐 Só agora (depois dos hooks) fazemos o redirect
+  // 🔐 Proteção de rota
   if (!respostas) {
     return <Navigate to="/formulario" replace />;
   }
@@ -99,11 +87,9 @@ useEffect(() => {
         <p className="text-lg mb-6">
           A sua colaboração foi fundamental para o desenvolvimento deste estudo
           académico. As respostas fornecidas contribuirão para a análise da
-          interação dos utilizadores com alertas e mensagens de suporte em
-          ambientes web.
+          interação dos utilizadores com ambientes web.
         </p>
 
-        {/* ✅ NOVO: Resultado ao utilizador com base APENAS nas imagens */}
         <div className="bg-red-50 border border-red-300 p-6 rounded-lg text-left">
           <h2 className="text-xl font-semibold mb-4">
             Resultado da avaliação

@@ -23,15 +23,16 @@ export default function AdminNavbar() {
       <Link to="/formulario" className="hover:underline">
         Formulário
       </Link>
+<Link to="/dashboard/behavioral">
+  Dashboard Comportamental
+</Link>
 
-      <Link to="/admin/importar" className="hover:underline">
-        Importar CSV
-      </Link>
+
 
       {/* Botão Logout alinhado à direita */}
       <button
         onClick={logout}
-        className="ml-auto bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-white"
+        className="ml-auto bg-red-600 hover:bg-red-600 px-4 py-2 rounded text-white"
       >
         Logout
       </button>
