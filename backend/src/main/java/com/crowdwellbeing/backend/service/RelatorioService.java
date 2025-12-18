@@ -1,10 +1,12 @@
 package com.crowdwellbeing.backend.service;
 
-import com.crowdwellbeing.backend.model.Relatorio;
-import com.crowdwellbeing.backend.repository.RelatorioRepository;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.crowdwellbeing.backend.model.Relatorio;
+import com.crowdwellbeing.backend.repository.RelatorioRepository;
 @SuppressWarnings("null")
 @Service
 public class RelatorioService {
