@@ -120,30 +120,30 @@ navigate("/avaliacao", {
   // Imagens
   // =============================
   const imagens = [
-    "/img/img1.png",
-    "/img/img2.png",
-    "/img/img3.png",
-    "/img/img9.png",
-    "/img/img5.png",
-    "/img/img6.png",
+  "/img/img8.png", // 0
+  "/img/img1.png", // 1
+  "/img/img5.png", // 1
+  "/img/img9.png", // 2
+  "/img/img2.png", // 3
+  "/img/img6.png", // 3
   ];
 
-  const imagensPergunta2 = [
-  "/img/img1.png",  // nível 0
-  "/img/img6.png",  // nível 1
-  "/img/img2.png",  // nível 2
-  "/img/img5.png",  // nível 2
-  "/img/img9.png",  // nível 3
-  "/img/img10.png", // nível 3
+const imagensPergunta2 = [
+  "/img/img1.png",  // 1
+  "/img/img6.png",  // 3
+  "/img/img2.png",  // 3
+  "/img/img5.png",  // 1
+  "/img/img9.png",  // 2
+  "/img/img10.png", // 3
   ];
 
-  const imagensPergunta3 = [
-  "/img/img4.png", // nível 0
-  "/img/img6.png", // nível 1
-  "/img/img2.png", // nível 2
-  "/img/img5.png", // nível 2
-  "/img/img9.png", // nível 3
-  "/img/img1.png", // nível 0
+const imagensPergunta3 = [
+  "/img/img2.png", // 3
+  "/img/img5.png", // 1
+  "/img/img1.png", // 1
+  "/img/img9.png", // 2
+  "/img/img8.png", // 0
+  "/img/img4.png", // 2
   ];
 
   // =============================
@@ -162,9 +162,9 @@ navigate("/avaliacao", {
         <div className="bg-red-50 border border-red-300 p-4 rounded-lg mb-8">
           <p className="text-gray-700">
             <strong>Instruções:</strong> 
-Nesta página serão apresentadas várias imagens que representam diferentes formas de movimento do rato no ecrã durante o preenchimento de um questionário.
-Observe atentamente cada imagem, tendo em conta o percurso realizado, a quantidade de desvios e a continuidade ou irregularidade das linhas.
-Escolha sempre a imagem que melhor corresponde à pergunta apresentada, de acordo com a sua perceção.
+              Nesta página serão apresentadas várias imagens que representam diferentes formas de movimento do rato no ecrã durante o preenchimento de um questionário.
+              Observe atentamente cada imagem, tendo em conta o percurso realizado, a quantidade de desvios e a continuidade ou irregularidade das linhas.
+              Escolha sempre a imagem que melhor corresponde à pergunta apresentada, de acordo com a sua perceção.
 
           </p>
         </div>

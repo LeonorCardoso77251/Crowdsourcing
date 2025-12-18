@@ -1,7 +1,7 @@
 // src/utils/avaliacao.ts
 
 export type NivelAtivacao =
-  | "Baixa ativação comportamental"
+  | "Ativação comportamental baixa"
   | "Ativação comportamental moderada"
   | "Ativação comportamental elevada";
 
@@ -11,20 +11,20 @@ export interface ResultadoAvaliacao {
   descricao: string;
 }
 
-// Escala comum imagem → score
+// Scores atribuídos a cada imagem
 const imageScores: Record<string, number> = {
-  "/img/img1.png": 0,
-  "/img/img4.png": 0,
+  "/img/img8.png": 0,
 
-  "/img/img6.png": 1,
+  "/img/img1.png": 1,
+  "/img/img5.png": 1,
   "/img/img7.png": 1,
 
-  "/img/img2.png": 2,
-  "/img/img5.png": 2,
-  "/img/img8.png": 2,
+  "/img/img4.png": 2,
+  "/img/img9.png": 2,
 
+  "/img/img2.png": 3,
   "/img/img3.png": 3,
-  "/img/img9.png": 3,
+  "/img/img6.png": 3,
   "/img/img10.png": 3,
 };
 
@@ -43,17 +43,17 @@ export function calcularAvaliacao(respostas: {
     scoreImagem(respostas.pergunta2) +
     scoreImagem(respostas.pergunta3);
 
-  // 🔹 Baixa ativação comportamental
+  //Baixa ativação comportamental
   if (scoreTotal <= 2) {
     return {
       scoreTotal,
-      nivel: "Baixa ativação comportamental",
+      nivel: "Ativação comportamental baixa",
       descricao:
         "Com base nas imagens selecionadas, o seu padrão de interação caracteriza-se por movimentos do rato mais simples e controlados, com trajetos relativamente regulares. Este resultado sugere uma forma de interação mais estável e previsível com a interface durante o questionário.",
     };
   }
 
-  // 🔹 Ativação comportamental moderada
+  //Ativação comportamental moderada
   if (scoreTotal <= 5) {
     return {
       scoreTotal,
@@ -63,7 +63,7 @@ export function calcularAvaliacao(respostas: {
     };
   }
 
-  // 🔹 Ativação comportamental elevada
+  // Ativação comportamental elevada
   return {
     scoreTotal,
     nivel: "Ativação comportamental elevada",
