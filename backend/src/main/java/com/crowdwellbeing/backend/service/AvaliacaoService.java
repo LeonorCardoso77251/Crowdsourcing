@@ -18,31 +18,36 @@ public class AvaliacaoService {
     private final FormularioRepository formularioRepository;
 
     public AvaliacaoService(
-        AvaliacaoRepository avaliacaoRepository,
-        UtilizadorRepository utilizadorRepository,
-        FormularioRepository formularioRepository
+            AvaliacaoRepository avaliacaoRepository,
+            UtilizadorRepository utilizadorRepository,
+            FormularioRepository formularioRepository
     ) {
         this.avaliacaoRepository = avaliacaoRepository;
         this.utilizadorRepository = utilizadorRepository;
         this.formularioRepository = formularioRepository;
     }
 
-    public void guardarAvaliacao(AvaliacaoRequestDTO dto) {
+public void guardarAvaliacao(AvaliacaoRequestDTO dto) {
 
-        Utilizador utilizador = utilizadorRepository
-                .findById(dto.getIdUtilizador())
-                .orElseThrow(() -> new RuntimeException("Utilizador não encontrado"));
+    Utilizador utilizador = utilizadorRepository
+            .findById(dto.getIdUtilizador())
+            .orElseThrow(() -> new RuntimeException("Utilizador não encontrado"));
 
-        Formulario formulario = formularioRepository
-                .findById(dto.getIdFormulario())
-                .orElseThrow(() -> new RuntimeException("Formulário não encontrado"));
+    Formulario formulario = formularioRepository
+            .findById(dto.getIdFormulario())
+            .orElseThrow(() -> new RuntimeException("Formulário não encontrado"));
 
-        Avaliacao avaliacao = new Avaliacao();
-        avaliacao.setScoreTotal(dto.getScoreTotal());
-        avaliacao.setNivel(dto.getNivel());
-        avaliacao.setUtilizador(utilizador);
-        avaliacao.setFormulario(formulario);
+    // 🔒 1 avaliação por utilizador
+    Avaliacao avaliacao = avaliacaoRepository
+            .findByUtilizador_IdUtilizador(dto.getIdUtilizador())
+            .orElse(new Avaliacao());
 
-        avaliacaoRepository.save(avaliacao);
-    }
+    avaliacao.setUtilizador(utilizador);
+    avaliacao.setFormulario(formulario);
+    avaliacao.setScoreTotal(dto.getScoreTotal());
+    avaliacao.setNivel(dto.getNivel());
+
+    avaliacaoRepository.save(avaliacao);
+}
+
 }

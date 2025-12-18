@@ -70,7 +70,7 @@ public class RelatorioController {
         relatorioService.apagar(id);
     }
 
-    // 🔹 NOVO ENDPOINT: logs comportamentais
+    // 🔹 LOGS COMPORTAMENTAIS — 1 relatório por utilizador
     @PostMapping("/behavioral")
     public void guardarBehavioralLogs(@RequestBody BehaviorLogDTO dto)
             throws JsonProcessingException {
@@ -79,11 +79,19 @@ public class RelatorioController {
                 .findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Utilizador não encontrado"));
 
-        Relatorio relatorio = new Relatorio();
+        Relatorio relatorio = relatorioRepository
+                .findByUtilizador_IdUtilizador(dto.getUserId())
+                .orElse(new Relatorio());
+
         relatorio.setUtilizador(utilizador);
-        relatorio.setBehavioralLogs(objectMapper.writeValueAsString(dto.getLogs()));
+        relatorio.setBehavioralLogs(
+                objectMapper.writeValueAsString(dto.getLogs())
+        );
         relatorio.setDataCriacao(LocalDateTime.now());
 
         relatorioRepository.save(relatorio);
     }
 }
+
+
+

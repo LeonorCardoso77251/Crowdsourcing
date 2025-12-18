@@ -8,6 +8,13 @@ import com.crowdwellbeing.backend.model.Avaliacao;
 
 public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
 
-    // 🔒 garante 1 avaliação por formulário (opcional, mas útil)
-    Optional<Avaliacao> findByFormulario_IdFormulario(Long idFormulario);
+    // 🔒 Avaliação única por utilizador
+    Optional<Avaliacao> findByUtilizador_IdUtilizador(Long idUtilizador);
+
+    // (mantém este, não estraga nada)
+    Optional<Avaliacao> findByUtilizador_IdUtilizadorAndFormulario_IdFormulario(
+            Long idUtilizador,
+            Long idFormulario
+    );
 }
+
