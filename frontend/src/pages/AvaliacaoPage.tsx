@@ -17,41 +17,18 @@ export default function AvaliacaoPage() {
   const resultado = respostas ? calcularAvaliacao(respostas) : null;
 
   // Enviar logs e terminar o estudo (mantido igual ao teu)
-  useEffect(() => {
-    const logs = localStorage.getItem("behaviorLogs");
-    const idUtilizador = localStorage.getItem("idUtilizador");
+ useEffect(() => {
+  if (!resultado) return;
 
-    if (!idUtilizador) {
-      console.error("❌ idUtilizador não encontrado");
-      return;
-    }
-
-    if (logs) {
-      console.log("📤 A enviar logs comportamentais para o backend");
-
-      api
-        .post("/relatorios/behavioral", {
-          userId: Number(idUtilizador),
-          logs: JSON.parse(logs),
-        })
-        .then(() => {
-          console.log("✅ Logs comportamentais enviados com sucesso");
-
-          // 🔚 Terminar estudo
-          localStorage.removeItem("behaviorLogs");
-          localStorage.removeItem("studyActive");
-        })
-        .catch((err) => {
-          console.error("❌ Erro ao enviar logs:", err);
-        });
-    }
-  }, []);
-  // 🔹 Guardar resultado da avaliação no backend
-useEffect(() => {
   const idUtilizador = localStorage.getItem("idUtilizador");
   const idFormulario = localStorage.getItem("formularioId");
 
-  if (!idUtilizador || !idFormulario || !resultado) return;
+  if (!idUtilizador || !idFormulario) {
+    console.error("❌ idUtilizador ou idFormulario em falta");
+    return;
+  }
+
+  console.log("📤 A enviar avaliação para o backend");
 
   api.post("/avaliacoes", {
     idUtilizador: Number(idUtilizador),
@@ -65,7 +42,44 @@ useEffect(() => {
   .catch((err) => {
     console.error("❌ Erro ao guardar avaliação:", err);
   });
+
+}, [resultado]); // 🔥 ISTO É A CHAVE
+
+  // 🔹 Guardar resultado da avaliação no backend
+ // 🔹 Guardar avaliação (CORRIGIDO)
+useEffect(() => {
+  const logs = localStorage.getItem("behaviorLogs");
+  const idUtilizador = localStorage.getItem("idUtilizador");
+
+  if (!idUtilizador || !logs) {
+    return;
+  }
+
+  console.log("📤 A enviar logs comportamentais para o backend");
+
+  api
+    .post("/relatorios/behavioral", {
+      userId: Number(idUtilizador),
+      logs: JSON.parse(logs),
+    })
+    .then(() => {
+      console.log("✅ Relatório criado / atualizado com sucesso");
+
+      // 🔒 LIMPEZA SÓ DEPOIS DO RELATÓRIO EXISTIR
+      localStorage.removeItem("behaviorLogs");
+      localStorage.removeItem("studyActive");
+      localStorage.removeItem("formularioId");
+    })
+    .catch((err) => {
+      if (err.response?.status === 500) {
+        console.warn("⚠️ Relatório já existente — ignorado");
+      } else {
+        console.error("❌ Erro ao enviar logs:", err);
+      }
+    });
 }, []);
+
+
 
 
   // 🔐 Só agora (depois dos hooks) fazemos o redirect

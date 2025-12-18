@@ -6,6 +6,10 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   const handleParticiparClick = async () => {
+      // 🔥 LIMPAR ESTUDO ANTERIOR
+  localStorage.removeItem("formularioId");
+  localStorage.removeItem("studyActive");
+  localStorage.removeItem("behaviorLogs");
     console.log("➡️ Botão 'Iniciar Participação' clicado!");
 
     try {
