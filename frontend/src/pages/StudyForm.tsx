@@ -14,7 +14,7 @@ export default function StudyForm() {
   // =============================
   // Estados do formulário
   // =============================
-  const [nome, setNome] = useState("");
+
   const [faixaEtaria, setFaixaEtaria] = useState("");
   const [genero, setGenero] = useState("");
   const [consentimento, setConsentimento] = useState(false);
@@ -100,20 +100,6 @@ export default function StudyForm() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nome */}
-          <div>
-            <label className="block font-medium">
-              Nome <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              required
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-
           {/* Faixa Etária */}
           <div>
             <label className="block font-medium">

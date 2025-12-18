@@ -2,28 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import AdminNavbar from "../components/AdminNavbar";
 import { obterUtilizadores, obterAvaliacoes, obterRelatorios } from "../api/api";
 
-import { Pie, Bar } from "react-chartjs-2";
+import { Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
   Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
 } from "chart.js";
 
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement
-);
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 // =======================
-// TIPOS (ALINHADOS COM O BACKEND)
+// TIPOS (INALTERADOS)
 // =======================
 type Utilizador = {
   idUtilizador: number;
@@ -44,14 +34,6 @@ type Avaliacao = {
 
 type Relatorio = {
   idRelatorio: number;
-  totalMensagens: number | null;
-  behavioralLogs: Record<string, unknown> | null;
-  dataCriacao: string;
-  utilizador: {
-    idUtilizador: number;
-    genero: string | null;
-    idadeFaixa: string | null;
-  };
 };
 
 // =======================
@@ -63,13 +45,11 @@ export default function DashboardPage() {
   const [relatorios, setRelatorios] = useState<Relatorio[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔵 Filtros (os teus + 1 novo)
   const [filtroGenero, setFiltroGenero] = useState("Todos");
   const [filtroFaixa, setFiltroFaixa] = useState("Todos");
-  const [apenasComRelatorio, setApenasComRelatorio] = useState(false);
 
   // =======================
-  // 🔵 CARREGAR DADOS
+  // CARREGAR DADOS (INALTERADO)
   // =======================
   useEffect(() => {
     const carregar = async () => {
@@ -92,7 +72,7 @@ export default function DashboardPage() {
   }, []);
 
   // =======================
-  // 🔵 FAIXAS ETÁRIAS DINÂMICAS
+  // FAIXAS ETÁRIAS (INALTERADO)
   // =======================
   const faixasDisponiveis = useMemo(() => {
     const set = new Set<string>();
@@ -103,93 +83,39 @@ export default function DashboardPage() {
   }, [utilizadores]);
 
   // =======================
-  // 🔵 UTILIZADORES FILTRADOS (EXTENDIDO, NÃO ALTERADO)
+  // UTILIZADORES FILTRADOS (INALTERADO)
   // =======================
   const utilizadoresFiltrados = useMemo(() => {
-    const idsComRelatorio = new Set(
-      relatorios.map((r) => r.utilizador.idUtilizador)
-    );
-
     return utilizadores.filter((u) => {
       const genero = u.genero ?? "Não informado";
       const okGenero = filtroGenero === "Todos" || genero === filtroGenero;
       const okFaixa = filtroFaixa === "Todos" || u.idadeFaixa === filtroFaixa;
-      const okRelatorio =
-        !apenasComRelatorio || idsComRelatorio.has(u.idUtilizador);
-
-      return okGenero && okFaixa && okRelatorio;
+      return okGenero && okFaixa;
     });
-  }, [
-    utilizadores,
-    filtroGenero,
-    filtroFaixa,
-    apenasComRelatorio,
-    relatorios,
-  ]);
+  }, [utilizadores, filtroGenero, filtroFaixa]);
 
   const idsUtilizadoresFiltrados = useMemo(() => {
     return new Set(utilizadoresFiltrados.map((u) => u.idUtilizador));
   }, [utilizadoresFiltrados]);
 
   // =======================
-  // 🔵 KPIs
+  // KPIs
   // =======================
   const totalUtilizadores = utilizadores.length;
   const totalAvaliacoes = avaliacoes.length;
   const totalRelatorios = relatorios.length;
 
-  const percentagemScoreAlto = useMemo(() => {
-    if (avaliacoes.length === 0) return 0;
-    const altos = avaliacoes.filter((a) => a.scoreTotal > 4).length;
-    return Math.round((altos / avaliacoes.length) * 100);
+  // 🔁 NOVO KPI (única lógica adicionada)
+  const scoreMedioGlobal = useMemo(() => {
+    if (avaliacoes.length === 0) return "0.00";
+    return (
+      avaliacoes.reduce((acc, a) => acc + a.scoreTotal, 0) /
+      avaliacoes.length
+    ).toFixed(2);
   }, [avaliacoes]);
 
   // =======================
-  // 🔵 MÉTRICAS COMPORTAMENTAIS
-  // =======================
-  const relatoriosComLogs = useMemo(() => {
-    return relatorios.filter(
-      (r) => r.behavioralLogs && Object.keys(r.behavioralLogs).length > 0
-    ).length;
-  }, [relatorios]);
-
-  const scoreMedioComRelatorio = useMemo(() => {
-    const ids = new Set(relatorios.map((r) => r.utilizador.idUtilizador));
-    const scores = avaliacoes
-      .filter((a) => ids.has(a.utilizador.idUtilizador))
-      .map((a) => a.scoreTotal);
-
-    if (scores.length === 0) return "0.00";
-    return (
-      scores.reduce((acc, v) => acc + v, 0) / scores.length
-    ).toFixed(2);
-  }, [avaliacoes, relatorios]);
-
-  // =======================
-  // 🔵 RELATÓRIOS POR MÊS
-  // =======================
-  const dadosRelatoriosPorMes = useMemo(() => {
-    const cont: Record<string, number> = {};
-
-    relatorios.forEach((r) => {
-      const mes = r.dataCriacao.slice(0, 7); // YYYY-MM
-      cont[mes] = (cont[mes] || 0) + 1;
-    });
-
-    return {
-      labels: Object.keys(cont),
-      datasets: [
-        {
-          label: "Relatórios",
-          data: Object.values(cont),
-          backgroundColor: "#4A90E2",
-        },
-      ],
-    };
-  }, [relatorios]);
-
-  // =======================
-  // 🔵 GRÁFICOS ORIGINAIS (INTOCADOS)
+  // GRÁFICOS (CORES ORIGINAIS)
   // =======================
   const dadosFaixas = useMemo(() => {
     const contagem: Record<string, number> = {};
@@ -284,27 +210,8 @@ export default function DashboardPage() {
     };
   }, [avaliacoes, idsUtilizadoresFiltrados]);
 
-  const dadosRelatorios = useMemo(() => {
-    const comRelatorio = relatorios.filter((r) =>
-      idsUtilizadoresFiltrados.has(r.utilizador.idUtilizador)
-    ).length;
-
-    const total = utilizadoresFiltrados.length;
-    const semRelatorio = Math.max(total - comRelatorio, 0);
-
-    return {
-      labels: ["Com Relatório", "Sem Relatório"],
-      datasets: [
-        {
-          data: [comRelatorio, semRelatorio],
-          backgroundColor: ["#4A90E2", "#B8E986"],
-        },
-      ],
-    };
-  }, [relatorios, idsUtilizadoresFiltrados, utilizadoresFiltrados.length]);
-
   // =======================
-  // 🔵 RENDER
+  // RENDER
   // =======================
   return (
     <>
@@ -325,10 +232,10 @@ export default function DashboardPage() {
           <KPI titulo="Utilizadores" valor={totalUtilizadores} />
           <KPI titulo="Avaliações" valor={totalAvaliacoes} />
           <KPI titulo="Relatórios" valor={totalRelatorios} />
-          <KPI titulo="% Score Alto" valor={`${percentagemScoreAlto}%`} />
+          <KPI titulo="Score Médio" valor={scoreMedioGlobal} />
         </div>
 
-        {/* FILTROS (OS TEUS + 1 NOVO) */}
+        {/* FILTROS */}
         <div className="flex flex-wrap gap-6 mb-10">
           <div>
             <label className="font-semibold block mb-2">Género</label>
@@ -358,22 +265,12 @@ export default function DashboardPage() {
               ))}
             </select>
           </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={apenasComRelatorio}
-              onChange={(e) => setApenasComRelatorio(e.target.checked)}
-            />
-            <label>Apenas com relatório</label>
-          </div>
         </div>
 
         {loading ? (
           <p>A carregar dados…</p>
         ) : (
           <>
-            {/* GRÁFICOS ORIGINAIS */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
               <div className="bg-white p-6 shadow rounded">
                 <h2 className="font-semibold mb-4">Faixa Etária</h2>
@@ -386,7 +283,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
               <div className="bg-white p-6 shadow rounded">
                 <h2 className="font-semibold mb-4">Nível</h2>
                 <Pie data={dadosNivel} />
@@ -396,37 +293,9 @@ export default function DashboardPage() {
                 <h2 className="font-semibold mb-4">Score</h2>
                 <Pie data={dadosScore} />
               </div>
-
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">Relatórios</h2>
-                <Pie data={dadosRelatorios} />
-              </div>
             </div>
 
-            {/* NOVA SECÇÃO */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">Relatórios por Mês</h2>
-                <Bar data={dadosRelatoriosPorMes} />
-              </div>
-
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">
-                  Indicadores Comportamentais
-                </h2>
-                <ul className="list-disc ml-6 space-y-2">
-                  <li>
-                    Relatórios com logs: <b>{relatoriosComLogs}</b>
-                  </li>
-                  <li>
-                    Score médio (com relatório):{" "}
-                    <b>{scoreMedioComRelatorio}</b>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* TABELA ORIGINAL */}
+            {/* TABELA FINAL (INALTERADA) */}
             <p className="mb-3">
               A mostrar <b>{utilizadoresFiltrados.length}</b> utilizadores.
             </p>
@@ -458,8 +327,6 @@ export default function DashboardPage() {
   );
 }
 
-// =======================
-// 🔵 KPI COMPONENT
 // =======================
 function KPI({ titulo, valor }: { titulo: string; valor: number | string }) {
   return (
