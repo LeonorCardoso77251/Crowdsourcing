@@ -55,7 +55,7 @@ export default function StudyForm() {
       console.log(" Consentimento:", true);
       console.log(" Código do participante:", codigoParticipante);
 
-      navigate("/formulario");
+      navigate("/instrucoes")
 
     } catch (error) {
       console.error(" Erro ao submeter StudyForm:", error);

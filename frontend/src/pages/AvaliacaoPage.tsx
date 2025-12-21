@@ -85,9 +85,8 @@ export default function AvaliacaoPage() {
         </h1>
 
         <p className="text-lg mb-6">
-          A sua colaboração foi fundamental para o desenvolvimento deste estudo
-          . As respostas fornecidas contribuirão para a análise da
-          interação dos utilizadores com ambientes web.
+            A sua colaboração foi fundamental para o desenvolvimento deste estudo académico.
+            De seguida, apresentamos um resultado informativo, baseado exclusivamente nas imagens selecionadas durante a interação.
         </p>
 
         <div className="bg-red-50 border border-red-300 p-6 rounded-lg text-left">

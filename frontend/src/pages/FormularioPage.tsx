@@ -144,18 +144,6 @@ export default function FormularioPage() {
         <h1 className="text-3xl font-bold text-red-700 mb-6">
           Questionário
         </h1>
-
-        {/* INSTRUÇÕES */}
-        <div className="bg-red-50 border border-red-300 p-4 rounded-lg mb-8">
-          <p className="text-gray-700">
-            <strong>Instruções:</strong> 
-              Nesta página serão apresentadas várias imagens que representam diferentes formas de movimento do rato no ecrã durante o preenchimento de um questionário.
-              Observe atentamente cada imagem, tendo em conta o percurso realizado, a quantidade de desvios e a continuidade ou irregularidade das linhas.
-              Escolha sempre a imagem que melhor corresponde à pergunta apresentada, de acordo com a sua perceção.
-
-          </p>
-        </div>
-
         {/* PERGUNTA 1 */}
         <div className="bg-red-50 border border-red-300 p-6 rounded-lg mb-8">
           <h2 className="text-xl font-semibold mb-4">

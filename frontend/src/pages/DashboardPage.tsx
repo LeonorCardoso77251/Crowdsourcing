@@ -3,15 +3,13 @@ import AdminNavbar from "../components/AdminNavbar";
 import { obterUtilizadores, obterAvaliacoes, obterRelatorios } from "../api/api";
 
 import { Pie } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+// =======================
+// TIPOS
+// =======================
 type Utilizador = {
   idUtilizador: number;
   genero: string | null;
@@ -33,8 +31,46 @@ type Relatorio = {
   idRelatorio: number;
 };
 
-// COMPONENTE
+// =======================
+// FUNÇÕES ESTATÍSTICAS
+// =======================
+function calcularMediana(valores: number[]) {
+  if (valores.length === 0) return 0;
+  const sorted = [...valores].sort((a, b) => a - b);
+  const meio = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0
+    ? sorted[meio]
+    : (sorted[meio - 1] + sorted[meio]) / 2;
+}
 
+function calcularDesvioPadrao(valores: number[]) {
+  if (valores.length === 0) return 0;
+  const media = valores.reduce((acc, v) => acc + v, 0) / valores.length;
+  const variancia =
+    valores.reduce((acc, v) => acc + (v - media) ** 2, 0) / valores.length;
+  return Math.sqrt(variancia);
+}
+
+// =======================
+// OPTIONS (PIES MAIS PEQUENOS)
+// =======================
+const pieOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: "bottom" as const,
+      labels: {
+        boxWidth: 12,
+        padding: 14,
+      },
+    },
+  },
+};
+
+// =======================
+// COMPONENTE
+// =======================
 export default function DashboardPage() {
   const [utilizadores, setUtilizadores] = useState<Utilizador[]>([]);
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
@@ -44,8 +80,9 @@ export default function DashboardPage() {
   const [filtroGenero, setFiltroGenero] = useState("Todos");
   const [filtroFaixa, setFiltroFaixa] = useState("Todos");
 
-  // CARREGAR DADOS 
-
+  // =======================
+  // CARREGAR DADOS
+  // =======================
   useEffect(() => {
     const carregar = async () => {
       try {
@@ -66,8 +103,9 @@ export default function DashboardPage() {
     carregar();
   }, []);
 
-  // FAIXAS ETÁRIAS 
-
+  // =======================
+  // FAIXAS ETÁRIAS
+  // =======================
   const faixasDisponiveis = useMemo(() => {
     const set = new Set<string>();
     utilizadores.forEach((u) => {
@@ -76,8 +114,9 @@ export default function DashboardPage() {
     return Array.from(set);
   }, [utilizadores]);
 
-  // UTILIZADORES FILTRADOS 
-
+  // =======================
+  // UTILIZADORES FILTRADOS
+  // =======================
   const utilizadoresFiltrados = useMemo(() => {
     return utilizadores.filter((u) => {
       const genero = u.genero ?? "Não informado";
@@ -91,8 +130,9 @@ export default function DashboardPage() {
     return new Set(utilizadoresFiltrados.map((u) => u.idUtilizador));
   }, [utilizadoresFiltrados]);
 
+  // =======================
   // KPIs
- 
+  // =======================
   const totalUtilizadores = utilizadores.length;
   const totalAvaliacoes = avaliacoes.length;
   const totalRelatorios = relatorios.length;
@@ -100,16 +140,89 @@ export default function DashboardPage() {
   const scoreMedioGlobal = useMemo(() => {
     if (avaliacoes.length === 0) return "0.00";
     return (
-      avaliacoes.reduce((acc, a) => acc + a.scoreTotal, 0) /
-      avaliacoes.length
+      avaliacoes.reduce((acc, a) => acc + a.scoreTotal, 0) / avaliacoes.length
     ).toFixed(2);
   }, [avaliacoes]);
 
-  // GRÁFICOS
+  // =======================
+  // MÉTRICAS EXTRA (SCORE)
+  // =======================
+  const scoresGlobais = useMemo(
+    () => avaliacoes.map((a) => a.scoreTotal),
+    [avaliacoes]
+  );
 
+  const scoreMediana = useMemo(
+    () => calcularMediana(scoresGlobais).toFixed(2),
+    [scoresGlobais]
+  );
+
+  const scoreDesvioPadrao = useMemo(
+    () => calcularDesvioPadrao(scoresGlobais).toFixed(2),
+    [scoresGlobais]
+  );
+
+  const scoreMin = useMemo(
+    () => (scoresGlobais.length ? Math.min(...scoresGlobais).toFixed(2) : "0.00"),
+    [scoresGlobais]
+  );
+
+  const scoreMax = useMemo(
+    () => (scoresGlobais.length ? Math.max(...scoresGlobais).toFixed(2) : "0.00"),
+    [scoresGlobais]
+  );
+
+  // =======================
+  // MÉTRICAS POR GÉNERO
+  // =======================
+  const statsPorGenero = useMemo(() => {
+    const map: Record<string, number[]> = {};
+    avaliacoes.forEach((a) => {
+      const g = a.utilizador.genero ?? "Não informado";
+      if (!map[g]) map[g] = [];
+      map[g].push(a.scoreTotal);
+    });
+
+    return Object.entries(map)
+      .map(([genero, scores]) => ({
+        genero,
+        n: scores.length,
+        media: (scores.reduce((acc, v) => acc + v, 0) / scores.length).toFixed(2),
+        mediana: calcularMediana(scores).toFixed(2),
+        desvio: calcularDesvioPadrao(scores).toFixed(2),
+      }))
+      .sort((a, b) => b.n - a.n);
+  }, [avaliacoes]);
+
+  // =======================
+  // MÉTRICAS POR FAIXA ETÁRIA
+  // =======================
+  const statsPorFaixa = useMemo(() => {
+    const map: Record<string, number[]> = {};
+
+    // usa as avaliações porque são as que têm score
+    avaliacoes.forEach((a) => {
+      const faixa = a.utilizador.idadeFaixa ?? "Não informado";
+      if (!map[faixa]) map[faixa] = [];
+      map[faixa].push(a.scoreTotal);
+    });
+
+    return Object.entries(map)
+      .map(([faixa, scores]) => ({
+        faixa,
+        n: scores.length,
+        media: (scores.reduce((acc, v) => acc + v, 0) / scores.length).toFixed(2),
+        mediana: calcularMediana(scores).toFixed(2),
+        desvio: calcularDesvioPadrao(scores).toFixed(2),
+      }))
+      .sort((a, b) => b.n - a.n);
+  }, [avaliacoes]);
+
+  // =======================
+  // GRÁFICOS (CORES ORIGINAIS)
+  // =======================
   const dadosFaixas = useMemo(() => {
     const contagem: Record<string, number> = {};
-
     utilizadoresFiltrados.forEach((u) => {
       const faixa = u.idadeFaixa ?? "Não informado";
       contagem[faixa] = (contagem[faixa] || 0) + 1;
@@ -200,126 +313,306 @@ export default function DashboardPage() {
     };
   }, [avaliacoes, idsUtilizadoresFiltrados]);
 
-
+  // =======================
+  // RENDER
+  // =======================
   return (
     <>
       <AdminNavbar />
 
-      <div className="p-10">
-        <h1 className="text-3xl font-bold mb-2">
-          Dashboard — Estatísticas do Sistema
-        </h1>
+      {/* Fundo subtil e espaçamento melhor */}
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50">
 
-        <p className="text-gray-600 mb-6">
+        <div className="p-6 md:p-10 max-w-7xl mx-auto">
+          <div className="flex gap-4 mb-10">
+  <div className="w-1 bg-indigo-500 rounded-full" />
+  <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 w-full">
+              <h1 className="text-3xl font-bold">
+                Dashboard — Estatísticas do Sistema
+              </h1>
+              <p className="text-gray-600 mt-2 max-w-3xl">
+                Visão agregada e anonimizadas das variáveis demográficas e dos
+                resultados de avaliação. Inclui métricas descritivas (média,
+                mediana e desvio padrão) para apoiar análise exploratória.
+              </p>
+            </div>
 
-        </p>
 
-        {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-          <KPI titulo="Utilizadores" valor={totalUtilizadores} />
-          <KPI titulo="Avaliações" valor={totalAvaliacoes} />
-          <KPI titulo="Relatórios" valor={totalRelatorios} />
-          <KPI titulo="Score Médio" valor={scoreMedioGlobal} />
-        </div>
-
-        {/* FILTROS */}
-        <div className="flex flex-wrap gap-6 mb-10">
-          <div>
-            <label className="font-semibold block mb-2">Género</label>
-            <select
-              value={filtroGenero}
-              onChange={(e) => setFiltroGenero(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option>Todos</option>
-              <option>Feminino</option>
-              <option>Masculino</option>
-              <option>Outro</option>
-              <option>Não informado</option>
-            </select>
           </div>
 
-          <div>
-            <label className="font-semibold block mb-2">Faixa Etária</label>
-            <select
-              value={filtroFaixa}
-              onChange={(e) => setFiltroFaixa(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option>Todos</option>
-              {faixasDisponiveis.map((f) => (
-                <option key={f}>{f}</option>
-              ))}
-            </select>
+          {/* KPIs principais */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <KPI titulo="Utilizadores" valor={totalUtilizadores} />
+            <KPI titulo="Avaliações" valor={totalAvaliacoes} />
+            <KPI titulo="Relatórios" valor={totalRelatorios} />
+            <KPI titulo="Score Médio" valor={scoreMedioGlobal} />
           </div>
-        </div>
 
-        {loading ? (
-          <p>A carregar dados…</p>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">Faixa Etária</h2>
-                <Pie data={dadosFaixas} />
+          {/* Métricas extra do score (mais “académico”) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+            <KPI titulo="Mediana" valor={scoreMediana} />
+            <KPI titulo="Desvio Padrão" valor={scoreDesvioPadrao} />
+            <KPI titulo="Mínimo" valor={scoreMin} />
+            <KPI titulo="Máximo" valor={scoreMax} />
+            <KPI titulo="Amostra (N)" valor={scoresGlobais.length} />
+          </div>
+
+          {/* Filtros */}
+          <div className="bg-white p-5 md:p-6 shadow rounded-lg mb-10">
+            <h2 className="font-semibold mb-4">Filtros</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="font-semibold block mb-2">Género</label>
+                <select
+                  value={filtroGenero}
+                  onChange={(e) => setFiltroGenero(e.target.value)}
+                  className="border p-2 rounded w-full"
+                >
+                  <option>Todos</option>
+                  <option>Feminino</option>
+                  <option>Masculino</option>
+                  <option>Outro</option>
+                  <option>Não informado</option>
+                </select>
               </div>
 
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">Género</h2>
-                <Pie data={dadosGeneros} />
+              <div>
+                <label className="font-semibold block mb-2">Faixa Etária</label>
+                <select
+                  value={filtroFaixa}
+                  onChange={(e) => setFiltroFaixa(e.target.value)}
+                  className="border p-2 rounded w-full"
+                >
+                  <option>Todos</option>
+                  {faixasDisponiveis.map((f) => (
+                    <option key={f}>{f}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">Nível</h2>
-                <Pie data={dadosNivel} />
-              </div>
-
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">Score</h2>
-                <Pie data={dadosScore} />
-              </div>
-            </div>
-
-            {/* TABELA FINAL */}
-            <p className="mb-3">
-              A mostrar <b>{utilizadoresFiltrados.length}</b> utilizadores.
+            <p className="text-sm text-gray-500 mt-4">
+              Nota: os filtros afetam os gráficos e a tabela de utilizadores.
             </p>
+          </div>
 
-            <table className="w-full border border-gray-400">
-              <thead className="bg-gray-200">
-                <tr>
-                  <th className="border p-2">ID</th>
-                  <th className="border p-2">Faixa Etária</th>
-                  <th className="border p-2">Género</th>
-                </tr>
-              </thead>
-              <tbody>
-                {utilizadoresFiltrados.map((u) => (
-                  <tr key={u.idUtilizador} className="text-center">
-                    <td className="border p-2">{u.idUtilizador}</td>
-                    <td className="border p-2">{u.idadeFaixa ?? "—"}</td>
-                    <td className="border p-2">
-                      {u.genero ?? "Não informado"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        )}
+          {loading ? (
+            <p>A carregar dados…</p>
+          ) : (
+            <>
+              {/* GRÁFICOS (Pies menores e consistentes) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                <CardGrafico titulo="Faixa Etária">
+                  <div className="h-64 flex justify-center">
+                    <Pie data={dadosFaixas} options={pieOptions} />
+                  </div>
+                </CardGrafico>
+
+                <CardGrafico titulo="Género">
+                  <div className="h-64 flex justify-center">
+                    <Pie data={dadosGeneros} options={pieOptions} />
+                  </div>
+                </CardGrafico>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                <CardGrafico titulo="Nível">
+                  <div className="h-64 flex justify-center">
+                    <Pie data={dadosNivel} options={pieOptions} />
+                  </div>
+                </CardGrafico>
+
+                <CardGrafico titulo="Score">
+                  <div className="h-64 flex justify-center">
+                    <Pie data={dadosScore} options={pieOptions} />
+                  </div>
+                </CardGrafico>
+              </div>
+
+              {/* TABELAS analíticas (por género e por faixa) */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-10">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100
+">
+                  <h2 className="font-semibold mb-4">Estatísticas do Score por Género</h2>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse rounded-xl overflow-hidden">
+
+<thead className="bg-gray-100">
+  <tr>
+    <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-left">Género</th>
+    <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-center">N</th>
+    <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-center">Média</th>
+    <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-center">Mediana</th>
+    <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-center">DP</th>
+  </tr>
+</thead>
+<tbody className="divide-y divide-gray-100">
+  {statsPorGenero.map((g, i) => (
+    <tr
+      key={g.genero}
+      className={`${
+        i % 2 === 0 ? "bg-white" : "bg-gray-50"
+      } hover:bg-indigo-50 transition`}
+    >
+      <td className="px-4 py-3 text-sm text-gray-800">{g.genero}</td>
+      <td className="px-4 py-3 text-sm text-center font-medium">{g.n}</td>
+      <td className="px-4 py-3 text-sm text-center">{g.media}</td>
+      <td className="px-4 py-3 text-sm text-center">{g.mediana}</td>
+      <td className="px-4 py-3 text-sm text-center">{g.desvio}</td>
+    </tr>
+  ))}
+</tbody>
+
+                    </table>
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-3">
+                    DP = desvio padrão. Valores calculados a partir das avaliações disponíveis.
+                  </p>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100
+">
+                  <h2 className="font-semibold mb-4">
+                    Estatísticas do Score por Faixa Etária
+                  </h2>
+
+                  <div className="overflow-x-auto">
+                  <table className="w-full border-collapse rounded-xl overflow-hidden">
+  <thead className="bg-gray-100">
+    <tr>
+      <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-left">
+        Faixa Etária
+      </th>
+      <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-center">
+        N
+      </th>
+      <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-center">
+        Média
+      </th>
+      <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-center">
+        Mediana
+      </th>
+      <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-center">
+        DP
+      </th>
+    </tr>
+  </thead>
+
+  <tbody className="divide-y divide-gray-100">
+    {statsPorFaixa.map((f, i) => (
+      <tr
+        key={f.faixa}
+        className={`${
+          i % 2 === 0 ? "bg-white" : "bg-gray-50"
+        } hover:bg-indigo-50 transition`}
+      >
+        <td className="px-4 py-3 text-sm text-gray-800">
+          {f.faixa}
+        </td>
+        <td className="px-4 py-3 text-sm text-center font-medium">
+          {f.n}
+        </td>
+        <td className="px-4 py-3 text-sm text-center">
+          {f.media}
+        </td>
+        <td className="px-4 py-3 text-sm text-center">
+          {f.mediana}
+        </td>
+        <td className="px-4 py-3 text-sm text-center">
+          {f.desvio}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-4 leading-relaxed">
+  As faixas etárias são categorias; as métricas apresentadas referem-se ao score.
+</p>
+
+                </div>
+              </div>
+
+              {/* TABELA FINAL (MANTIDA) */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                  <h2 className="font-semibold">Utilizadores (Filtrados)</h2>
+                  <p className="text-sm text-gray-600">
+                    A mostrar <b>{utilizadoresFiltrados.length}</b> utilizadores.
+                  </p>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse rounded-xl overflow-hidden">
+
+<thead className="bg-gray-100">
+  <tr>
+    <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-center">ID</th>
+    <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-left">Faixa Etária</th>
+    <th className="px-4 py-3 text-sm font-semibold text-gray-700 text-left">Género</th>
+  </tr>
+</thead>
+
+                   <tbody className="divide-y divide-gray-100">
+  {utilizadoresFiltrados.map((u, i) => (
+    <tr
+      key={u.idUtilizador}
+      className={`${
+        i % 2 === 0 ? "bg-white" : "bg-gray-50"
+      } hover:bg-indigo-50 transition`}
+    >
+      <td className="px-4 py-3 text-sm text-center font-mono">
+        {u.idUtilizador}
+      </td>
+      <td className="px-4 py-3 text-sm">
+        {u.idadeFaixa ?? "—"}
+      </td>
+      <td className="px-4 py-3 text-sm">
+        {u.genero ?? "Não informado"}
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </>
   );
 }
 
-
+// =======================
+// COMPONENTES UI
+// =======================
 function KPI({ titulo, valor }: { titulo: string; valor: number | string }) {
   return (
-    <div className="bg-white p-6 shadow rounded text-center">
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
       <p className="text-gray-500">{titulo}</p>
       <p className="text-3xl font-bold">{valor}</p>
     </div>
   );
 }
+
+function CardGrafico({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold text-gray-900">{titulo}</h2>
+        <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
+          Distribuição
+        </span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
