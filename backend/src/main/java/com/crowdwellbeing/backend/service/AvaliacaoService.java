@@ -37,7 +37,6 @@ public void guardarAvaliacao(AvaliacaoRequestDTO dto) {
             .findById(dto.getIdFormulario())
             .orElseThrow(() -> new RuntimeException("Formulário não encontrado"));
 
-    // 🔒 1 avaliação por utilizador
     Avaliacao avaliacao = avaliacaoRepository
             .findByUtilizador_IdUtilizador(dto.getIdUtilizador())
             .orElse(new Avaliacao());

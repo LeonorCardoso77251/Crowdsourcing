@@ -12,9 +12,6 @@ import {
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-// =======================
-// TIPOS (INALTERADOS)
-// =======================
 type Utilizador = {
   idUtilizador: number;
   genero: string | null;
@@ -36,9 +33,8 @@ type Relatorio = {
   idRelatorio: number;
 };
 
-// =======================
 // COMPONENTE
-// =======================
+
 export default function DashboardPage() {
   const [utilizadores, setUtilizadores] = useState<Utilizador[]>([]);
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
@@ -48,9 +44,8 @@ export default function DashboardPage() {
   const [filtroGenero, setFiltroGenero] = useState("Todos");
   const [filtroFaixa, setFiltroFaixa] = useState("Todos");
 
-  // =======================
-  // CARREGAR DADOS (INALTERADO)
-  // =======================
+  // CARREGAR DADOS 
+
   useEffect(() => {
     const carregar = async () => {
       try {
@@ -71,9 +66,8 @@ export default function DashboardPage() {
     carregar();
   }, []);
 
-  // =======================
-  // FAIXAS ETÁRIAS (INALTERADO)
-  // =======================
+  // FAIXAS ETÁRIAS 
+
   const faixasDisponiveis = useMemo(() => {
     const set = new Set<string>();
     utilizadores.forEach((u) => {
@@ -82,9 +76,8 @@ export default function DashboardPage() {
     return Array.from(set);
   }, [utilizadores]);
 
-  // =======================
-  // UTILIZADORES FILTRADOS (INALTERADO)
-  // =======================
+  // UTILIZADORES FILTRADOS 
+
   const utilizadoresFiltrados = useMemo(() => {
     return utilizadores.filter((u) => {
       const genero = u.genero ?? "Não informado";
@@ -98,14 +91,12 @@ export default function DashboardPage() {
     return new Set(utilizadoresFiltrados.map((u) => u.idUtilizador));
   }, [utilizadoresFiltrados]);
 
-  // =======================
   // KPIs
-  // =======================
+ 
   const totalUtilizadores = utilizadores.length;
   const totalAvaliacoes = avaliacoes.length;
   const totalRelatorios = relatorios.length;
 
-  // 🔁 NOVO KPI (única lógica adicionada)
   const scoreMedioGlobal = useMemo(() => {
     if (avaliacoes.length === 0) return "0.00";
     return (
@@ -114,9 +105,8 @@ export default function DashboardPage() {
     ).toFixed(2);
   }, [avaliacoes]);
 
-  // =======================
-  // GRÁFICOS (CORES ORIGINAIS)
-  // =======================
+  // GRÁFICOS
+
   const dadosFaixas = useMemo(() => {
     const contagem: Record<string, number> = {};
 
@@ -210,9 +200,7 @@ export default function DashboardPage() {
     };
   }, [avaliacoes, idsUtilizadoresFiltrados]);
 
-  // =======================
-  // RENDER
-  // =======================
+
   return (
     <>
       <AdminNavbar />
@@ -223,8 +211,7 @@ export default function DashboardPage() {
         </h1>
 
         <p className="text-gray-600 mb-6">
-          Estatísticas agregadas e anonimizadas recolhidas no âmbito do estudo
-          experimental de análise comportamental e avaliação de bem-estar.
+
         </p>
 
         {/* KPIs */}
@@ -295,7 +282,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* TABELA FINAL (INALTERADA) */}
+            {/* TABELA FINAL */}
             <p className="mb-3">
               A mostrar <b>{utilizadoresFiltrados.length}</b> utilizadores.
             </p>
@@ -327,7 +314,7 @@ export default function DashboardPage() {
   );
 }
 
-// =======================
+
 function KPI({ titulo, valor }: { titulo: string; valor: number | string }) {
   return (
     <div className="bg-white p-6 shadow rounded text-center">

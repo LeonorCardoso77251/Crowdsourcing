@@ -26,7 +26,7 @@ public class Respostas {
     @Column(name = "Resposta2")
     private String resposta2;
     
-    @Column(name = "Resposta3")       // 🔵 NOVO
+    @Column(name = "Resposta3")      
     private String resposta3;
 
     @Column(name = "Tempo")
@@ -52,7 +52,6 @@ public class Respostas {
     public String getResposta2() { return resposta2; }
     public void setResposta2(String resposta2) { this.resposta2 = resposta2; }
 
-    // 🔵 NOVO
     public String getResposta3() { return resposta3; }
     public void setResposta3(String resposta3) { this.resposta3 = resposta3; }
 

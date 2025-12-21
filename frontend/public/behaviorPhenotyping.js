@@ -84,7 +84,7 @@ var userLog = (function () {
       }
     }, 1000);
 
-    // 🖱 Clicks
+    //  Clicks
     if (settings.clickCount || settings.clickDetails) {
       document.addEventListener("mouseup", function (event) {
         if (settings.clickCount) {
@@ -101,7 +101,7 @@ var userLog = (function () {
       });
     }
 
-    // 🐭 Mouse movement
+    //Mouse movement
     if (settings.mouseMovement) {
       document.addEventListener("mousemove", function (event) {
         results.mouseMovements.push({
@@ -112,7 +112,7 @@ var userLog = (function () {
       });
     }
 
-    // 👁 Context change
+    // Context change
     if (settings.context) {
       document.addEventListener("visibilitychange", function () {
         results.contextChange.push({
@@ -122,7 +122,7 @@ var userLog = (function () {
       });
     }
 
-    // ⌨ Key logger
+    // Key logger
     if (settings.keyLogger) {
       document.addEventListener("paste", function (event) {
         var pastedText = event.clipboardData
@@ -147,7 +147,7 @@ var userLog = (function () {
       });
     }
 
-    // 🎯 Action item
+    // Action item
     if (settings.actionItem.processOnAction) {
       var node = document.querySelector(settings.actionItem.selector);
       if (!node) throw new Error("Selector was not found.");
@@ -168,7 +168,6 @@ var userLog = (function () {
       settings = getSettings(defaults, options);
     }
 
-    // ✅ React/Vite safe
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", setupListeners);
     } else {

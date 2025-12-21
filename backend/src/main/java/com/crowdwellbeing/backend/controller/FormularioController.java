@@ -1,12 +1,21 @@
 package com.crowdwellbeing.backend.controller;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.crowdwellbeing.backend.model.Formulario;
 import com.crowdwellbeing.backend.model.Utilizador;
 import com.crowdwellbeing.backend.service.FormularioService;
 import com.crowdwellbeing.backend.service.UtilizadorService;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/formularios")
@@ -15,10 +24,8 @@ public class FormularioController {
 
     private final FormularioService formularioService;
 
-    // 🔵 ADICIONAR ISTO
     private final UtilizadorService utilizadorService;
 
-    // 🔵 CONSTRUTOR CORRETO (COM OS DOIS SERVICES)
     public FormularioController(FormularioService formularioService,
                                 UtilizadorService utilizadorService) {
         this.formularioService = formularioService;
@@ -51,21 +58,17 @@ public class FormularioController {
         formularioService.apagar(id);
     }
 
-    // 🔵 AGORA 100% CORRETO — NÃO DÁ MAIS ERRO 400
     @PostMapping("/novo/{idUtilizador}")
     public Formulario criarFormularioParaUtilizador(@PathVariable Long idUtilizador) {
 
-        // 1️⃣ Buscar o utilizador real na BD
         Utilizador utilizador = utilizadorService.buscarPorId(idUtilizador)
                 .orElseThrow(() -> new RuntimeException("Utilizador não encontrado"));
 
-        // 2️⃣ Criar um novo formulário associado
         Formulario f = new Formulario();
         f.setUtilizador(utilizador);
         f.setPergunta1(null);
         f.setPergunta2(null);
 
-        // 3️⃣ Guardar
         return formularioService.criarOuAtualizar(f);
     }
 }

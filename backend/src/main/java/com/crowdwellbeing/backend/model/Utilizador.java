@@ -25,7 +25,6 @@ public class Utilizador {
     @Column(name = "Idade_Faixa")
     private String idadeFaixa;
 
-    // 🔗 Relações (opcionais, mas corretas)
     @OneToMany(mappedBy = "utilizador")
     private List<Formulario> formularios;
 

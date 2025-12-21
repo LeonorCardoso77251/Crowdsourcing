@@ -20,7 +20,7 @@ import com.crowdwellbeing.backend.service.AvaliacaoService;
 public class AvaliacaoController {
 
     private final AvaliacaoService avaliacaoService;
-    //adicionei
+
      private final AvaliacaoRepository avaliacaoRepository;
 
     public AvaliacaoController(
@@ -36,7 +36,7 @@ public class AvaliacaoController {
         avaliacaoService.guardarAvaliacao(dto);
         return ResponseEntity.ok().build();
     }
-     // ✅ NOVO – PARA O DASHBOARD
+
     @GetMapping
     public ResponseEntity<List<Avaliacao>> obterTodasAvaliacoes() {
         return ResponseEntity.ok(avaliacaoRepository.findAll());

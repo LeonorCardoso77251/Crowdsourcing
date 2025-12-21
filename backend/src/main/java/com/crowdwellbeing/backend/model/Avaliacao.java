@@ -30,12 +30,10 @@ public class Avaliacao {
     @Column(name = "Data_Criacao")
     private LocalDateTime dataCriacao;
 
-    // 🔗 Relação com Utilizador
     @ManyToOne
     @JoinColumn(name = "ID_Utilizador", nullable = false)
     private Utilizador utilizador;
 
-    // 🔗 Relação com Formulario
     @ManyToOne
     @JoinColumn(name = "ID_Formulario", nullable = false)
     private Formulario formulario;

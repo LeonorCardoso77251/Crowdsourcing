@@ -1,11 +1,20 @@
 package com.crowdwellbeing.backend.controller;
 
-import com.crowdwellbeing.backend.model.Utilizador;
-import com.crowdwellbeing.backend.service.UtilizadorService;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.crowdwellbeing.backend.model.Utilizador;
+import com.crowdwellbeing.backend.service.UtilizadorService;
 
 @RestController
 @RequestMapping("/api/utilizadores")
@@ -52,7 +61,6 @@ public class UtilizadorController {
         utilizadorService.apagar(id);
     }
 
-    // ✅ NOVO ENDPOINT TEMPORÁRIO PARA IMPORTAR O JSON
     @PostMapping("/admin/importar-json")
 
     public ResponseEntity<String> importarJson() {

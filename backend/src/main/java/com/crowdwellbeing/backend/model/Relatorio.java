@@ -26,17 +26,14 @@ public class Relatorio {
     @Column(name = "Total_Mensagens")
     private Integer totalMensagens;
 
-    // 🔹 associação ao utilizador
     @ManyToOne
     @JoinColumn(name = "ID_Utilizador")
     private Utilizador utilizador;
 
-    // 🔹 logs comportamentais (JSONB – Hibernate 6)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "Behavioral_Logs", columnDefinition = "jsonb")
     private String behavioralLogs;
 
-    // 🔹 data de criação
     @Column(name = "Data_Criacao")
     private LocalDateTime dataCriacao;
 

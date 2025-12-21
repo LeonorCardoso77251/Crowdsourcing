@@ -2,26 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/api";
 
-/**
- * Estudo sobre Mobilidade Digital e Bem-Estar
- */
 export default function StudyForm() {
-  // =============================
-  // Navegação
-  // =============================
+
   const navigate = useNavigate();
-
-  // =============================
-  // Estados do formulário
-  // =============================
-
   const [faixaEtaria, setFaixaEtaria] = useState("");
   const [genero, setGenero] = useState("");
   const [consentimento, setConsentimento] = useState(false);
 
-  // =============================
-  // Código do participante (anónimo)
-  // =============================
+
   const [codigoParticipante] = useState(() => {
     return (
       "CW-" +
@@ -32,16 +20,12 @@ export default function StudyForm() {
     );
   });
 
-  // =============================
-  // Iniciar logs comportamentais
-  // =============================
   useEffect(() => {
     window.startBehaviorLogging?.();
   }, []);
 
-  // =============================
   // Submeter formulário
-  // =============================
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -49,8 +33,6 @@ export default function StudyForm() {
       alert("É necessário aceitar o consentimento informado.");
       return;
     }
-
-    // ⚠️ NÃO MEXER — esta era a lógica correta
     const idUtilizador = localStorage.getItem("idUtilizador");
 
     if (!idUtilizador) {
@@ -59,34 +41,28 @@ export default function StudyForm() {
     }
 
     try {
-      // 🔄 Atualizar utilizador EXISTENTE
       await api.put(`/utilizadores/${idUtilizador}`, {
         genero,
         idadeFaixa: faixaEtaria,
       });
 
-      // 🔐 Guardar dados auxiliares (frontend)
       localStorage.setItem("codigoParticipante", codigoParticipante);
       localStorage.setItem("consentimento", "true");
 
-      console.log("🧾 StudyForm associado ao utilizador:", idUtilizador);
-      console.log("🧾 Género:", genero);
-      console.log("🧾 Faixa Etária:", faixaEtaria);
-      console.log("🧾 Consentimento:", true);
-      console.log("🧾 Código do participante:", codigoParticipante);
+      console.log("StudyForm associado ao utilizador:", idUtilizador);
+      console.log(" Género:", genero);
+      console.log(" Faixa Etária:", faixaEtaria);
+      console.log(" Consentimento:", true);
+      console.log(" Código do participante:", codigoParticipante);
 
-      // 👉 Avançar para o formulário principal
       navigate("/formulario");
 
     } catch (error) {
-      console.error("❌ Erro ao submeter StudyForm:", error);
+      console.error(" Erro ao submeter StudyForm:", error);
       alert("Ocorreu um erro ao guardar os dados. Tenta novamente.");
     }
   };
 
-  // =============================
-  // Render
-  // =============================
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="bg-white max-w-2xl w-full p-8 rounded-lg shadow">
@@ -166,7 +142,7 @@ export default function StudyForm() {
 
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+            className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700"
           >
             Continuar
           </button>

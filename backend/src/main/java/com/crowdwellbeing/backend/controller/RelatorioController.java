@@ -42,8 +42,6 @@ public class RelatorioController {
         this.objectMapper = objectMapper;
     }
 
-    // 🔹 ENDPOINTS EXISTENTES (intocados)
-
     @GetMapping
     public List<Relatorio> listarTodos() {
         return relatorioService.listarTodos();
@@ -70,7 +68,6 @@ public class RelatorioController {
         relatorioService.apagar(id);
     }
 
-    // 🔹 LOGS COMPORTAMENTAIS — 1 relatório por utilizador
     @PostMapping("/behavioral")
     public void guardarBehavioralLogs(@RequestBody BehaviorLogDTO dto)
             throws JsonProcessingException {

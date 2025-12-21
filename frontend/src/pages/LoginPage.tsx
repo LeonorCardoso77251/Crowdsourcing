@@ -15,7 +15,7 @@ export default function LoginPage() {
       });
 
       if (response.data === true) {
-        const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hora
+        const expiresAt = Date.now() + 60 * 60 * 1000; 
 
         localStorage.setItem("admin", "true");
         localStorage.setItem("admin_expires_at", expiresAt.toString());
@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   return (
     <>
-      {/* 🔴 Navbar */}
+      {/*  Navbar */}
       <Navbar />
 
       {/* CONTEÚDO */}

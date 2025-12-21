@@ -4,8 +4,8 @@ export default function AdminNavbar() {
   const navigate = useNavigate();
 
   const logout = () => {
-    localStorage.removeItem("admin"); // removemos sessão
-    navigate("/"); // redireciona
+    localStorage.removeItem("admin"); 
+    navigate("/"); 
   };
 
   return (
@@ -16,20 +16,19 @@ export default function AdminNavbar() {
       </Link>
 
       <Link to="/dashboard" className="hover:underline">
-        Dashboard
+        Dashboard General
       </Link>
 
-      {/* 🔴 NOVO BOTÃO PARA O FORMULÁRIO */}
-      <Link to="/formulario" className="hover:underline">
+      {/*BOTÃO FORMULÁRIO 
+      /<Link to="/formulario" className="hover:underline">
         Formulário
+      </Link>*/}
+      {/* Botão Dashboard Comportamental */}
+      <Link to="/dashboard/behavioral">
+        Dashboard Comportamental
       </Link>
-<Link to="/dashboard/behavioral">
-  Dashboard Comportamental
-</Link>
 
-
-
-      {/* Botão Logout alinhado à direita */}
+      {/* Botão Logout  */}
       <button
         onClick={logout}
         className="ml-auto bg-red-600 hover:bg-red-600 px-4 py-2 rounded text-white"

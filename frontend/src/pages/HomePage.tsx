@@ -6,28 +6,27 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   const handleParticiparClick = async () => {
-      // 🔥 LIMPAR ESTUDO ANTERIOR
-  localStorage.removeItem("formularioId");
-  localStorage.removeItem("studyActive");
-  localStorage.removeItem("behaviorLogs");
-    console.log("➡️ Botão 'Iniciar Participação' clicado!");
+
+    localStorage.removeItem("formularioId");
+    localStorage.removeItem("studyActive");
+    localStorage.removeItem("behaviorLogs");
+    console.log("Botão 'Iniciar Participação' clicado!");
 
     try {
       const response = await api.post("/utilizadores/anonimo");
 
       const idUtilizador = response.data.idUtilizador;
 
-      // 🔑 guardar o ID REAL gerado pelo backend
       localStorage.setItem("idUtilizador", idUtilizador.toString());
       localStorage.setItem("studyActive", "true");
       localStorage.setItem("studyStartTime", Date.now().toString());
 
-      console.log("🟢 Estudo iniciado → ID Utilizador:", idUtilizador);
+      console.log("Estudo iniciado → ID Utilizador:", idUtilizador);
 
       navigate("/study");
 
     } catch (error) {
-      console.error("❌ Erro ao iniciar participação:", error);
+      console.error("Erro ao iniciar participação:", error);
       alert("Ocorreu um erro ao iniciar a participação.");
     }
   };
@@ -38,7 +37,7 @@ export default function HomePage() {
 
       <div className="p-10 flex flex-col items-center text-center">
         <h1 className="text-4xl font-bold text-red-700 mb-6">
-          Protótipo Web de Alertas e Mensagens de Suporte
+          Bem vindo ao Estudo de Interação Web
         </h1>
 
         <p className="text-gray-700 text-lg max-w-3xl mb-10">

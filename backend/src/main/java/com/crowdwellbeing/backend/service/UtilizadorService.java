@@ -1,15 +1,16 @@
 package com.crowdwellbeing.backend.service;
 
+import java.io.File;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+
 import com.crowdwellbeing.backend.model.Utilizador;
 import com.crowdwellbeing.backend.repository.UtilizadorRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UtilizadorService {
@@ -35,8 +36,6 @@ public class UtilizadorService {
     public void apagar(Long id) {
         utilizadorRepository.deleteById(id);
     }
-
-    // ✅ NOVO MÉTODO – Importar dados do JSON
     public void atualizarUtilizadoresAPartirDoJson() {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -59,15 +58,15 @@ public class UtilizadorService {
                     utilizadorRepository.save(u);
                     System.out.println("Atualizado → ID " + u.getIdUtilizador());
                 } else {
-                    System.out.println("⚠ Não encontrado → ID " + dado.getIdUtilizador());
+                    System.out.println("Não encontrado → ID " + dado.getIdUtilizador());
                 }
             }
 
-            System.out.println("✔ Importação JSON concluída!");
+            System.out.println("Importação JSON concluída!");
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("❌ Erro ao importar JSON");
+            System.out.println("Erro ao importar JSON");
         }
     }
 }

@@ -45,10 +45,9 @@ public class RespostasService {
         respostasRepository.deleteById(id);
     }
 
-    // 🔥 MÉTODO QUE FALTAVA
 public Respostas salvar(RespostasDTO dto) {
 
-    System.out.println("📥 [POST /respostas] DTO recebido");
+    System.out.println("[POST /respostas] DTO recebido");
     System.out.println("→ idUtilizador: " + dto.getIdUtilizador());
     System.out.println("→ idFormulario: " + dto.getIdFormulario());
     System.out.println("→ resposta1: " + dto.getResposta1());
@@ -57,19 +56,19 @@ public Respostas salvar(RespostasDTO dto) {
 
     Utilizador utilizador = utilizadorRepository.findById(dto.getIdUtilizador())
             .orElseThrow(() -> {
-                System.out.println("❌ Utilizador NÃO encontrado");
+                System.out.println(" Utilizador NÃO encontrado");
                 return new RuntimeException("Utilizador não encontrado");
             });
 
-    System.out.println("✅ Utilizador encontrado → ID " + utilizador.getIdUtilizador());
+    System.out.println(" Utilizador encontrado → ID " + utilizador.getIdUtilizador());
 
     Formulario formulario = formularioRepository.findById(dto.getIdFormulario())
             .orElseThrow(() -> {
-                System.out.println("❌ Formulário NÃO encontrado");
+                System.out.println("Formulário NÃO encontrado");
                 return new RuntimeException("Formulário não encontrado");
             });
 
-    System.out.println("✅ Formulário encontrado → ID " + formulario.getIdFormulario());
+    System.out.println(" Formulário encontrado → ID " + formulario.getIdFormulario());
 
     Respostas respostas = new Respostas();
     respostas.setResposta1(dto.getResposta1());
@@ -81,7 +80,7 @@ public Respostas salvar(RespostasDTO dto) {
 
     Respostas guardada = respostasRepository.save(respostas);
 
-    System.out.println("💾 Resposta guardada com sucesso");
+    System.out.println("Resposta guardada com sucesso");
     System.out.println("→ ID_Respostas: " + guardada.getIdRespostas());
     System.out.println("→ Tempo: " + guardada.getTempo());
 

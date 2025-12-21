@@ -19,7 +19,7 @@ export function useBehavioralTracking() {
 
     if (studyActive === "true" && typeof userLog !== "undefined") {
       userLog.init({
-        processTime: 1, // 🔥 grava automaticamente a cada 1 segundo
+        processTime: 1, 
 
         processData: (results) => {
           localStorage.setItem(

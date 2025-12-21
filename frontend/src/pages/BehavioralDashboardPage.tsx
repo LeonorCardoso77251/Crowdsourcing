@@ -37,9 +37,6 @@ type BehavioralLogs = {
   mouseMovements?: MouseMovement[];
 };
 
-// =======================
-// TIPOS
-// =======================
 type Relatorio = {
   idRelatorio: number;
   behavioralLogs: Record<string, unknown> | string | null;
@@ -48,9 +45,7 @@ type Relatorio = {
   };
 };
 
-// =======================
 // FUNÇÕES AUXILIARES
-// =======================
 function calcularVelocidadeMedia(
   movimentos: { x: number; y: number; timestamp: number }[]
 ): number {
@@ -69,7 +64,7 @@ function calcularVelocidadeMedia(
 
   if (tempoTotal <= 0) return 0;
 
-  return distanciaTotal / tempoTotal; // px/ms
+  return distanciaTotal / tempoTotal; 
 }
 
 function classificarEnvolvimento(
@@ -87,16 +82,13 @@ function classificarEnvolvimento(
   return "Alto";
 }
 
-// =======================
 // COMPONENTE
-// =======================
 export default function BehavioralDashboardPage() {
   const [relatorios, setRelatorios] = useState<Relatorio[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // =======================
-  // 🔵 CARREGAR RELATÓRIOS
-  // =======================
+  //  CARREGAR RELATÓRIOS
+  
   useEffect(() => {
     const carregar = async () => {
       try {
@@ -112,9 +104,8 @@ export default function BehavioralDashboardPage() {
     carregar();
   }, []);
 
-  // =======================
-  // 🔵 RELATÓRIOS COM LOGS
-  // =======================
+  //  RELATÓRIOS COM LOGS
+
   const relatoriosValidos = useMemo(() => {
   return relatorios
     .map((r) => {
@@ -144,10 +135,8 @@ export default function BehavioralDashboardPage() {
     );
 }, [relatorios]);
 
+  //EXTRAÇÃO DE MÉTRICAS
 
-  // =======================
-  // 🔵 EXTRAÇÃO DE MÉTRICAS
-  // =======================
   const metricas = useMemo(() => {
     return relatoriosValidos.map((r) => {
       const tempo = r.logs.time?.totalTime ?? 0;
@@ -175,9 +164,8 @@ export default function BehavioralDashboardPage() {
     });
   }, [relatoriosValidos]);
 
-  // =======================
-  // 🔵 KPIs
-  // =======================
+  //  KPIs
+
   const kpis = useMemo(() => {
     const total = metricas.length;
 
@@ -203,9 +191,9 @@ export default function BehavioralDashboardPage() {
     };
   }, [metricas]);
 
-  // =======================
-  // 🔵 GRÁFICOS
-  // =======================
+
+  //GRÁFICOS
+
   const dadosTempo = {
     labels: metricas.map((m) => `U${m.utilizador}`),
     datasets: [
@@ -258,9 +246,9 @@ export default function BehavioralDashboardPage() {
     };
   }, [metricas]);
 
-  // =======================
-  // 🔵 RENDER
-  // =======================
+
+  //RENDER
+
   return (
     <>
       <AdminNavbar />
@@ -271,8 +259,7 @@ export default function BehavioralDashboardPage() {
         </h1>
 
         <p className="text-gray-600 mb-10 lg:mb-14">
-          Análise detalhada dos logs comportamentais recolhidos durante a
-          interação dos utilizadores com o sistema.
+
         </p>
 
         {loading ? (
@@ -329,9 +316,8 @@ export default function BehavioralDashboardPage() {
   );
 }
 
-// =======================
 // KPI COMPONENT
-// =======================
+
 function KPI({ titulo, valor }: { titulo: string; valor: number | string }) {
   return (
     <div className="bg-white p-6 shadow rounded text-center">

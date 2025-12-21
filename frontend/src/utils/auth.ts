@@ -7,7 +7,7 @@ export function isAdminLoggedIn() {
   const now = Date.now();
 
   if (now > Number(expires)) {
-    // Sessão expirada → remover
+    
     localStorage.removeItem("admin");
     localStorage.removeItem("admin_expires_at");
     return false;

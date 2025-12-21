@@ -2,9 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import HomePage from "../pages/HomePage";
 import FormularioPage from "../pages/FormularioPage";
-import AvaliacaoPage from "../pages/AvaliacaoPage"; // 🔴 NOVO
+import AvaliacaoPage from "../pages/AvaliacaoPage"; // 
 import DashboardPage from "../pages/DashboardPage";
-import ImportarCSVPage from "../pages/ImportarCSVPage";
 import LoginPage from "../pages/LoginPage";
 import StudyForm from "../pages/StudyForm";
 import BehavioralDashboardPage from "../pages/BehavioralDashboardPage";
@@ -19,15 +18,12 @@ export default function AppRouter() {
         <Route path="/" element={<HomePage />} />
         <Route path="/study" element={<StudyForm />} />
         <Route path="/formulario" element={<FormularioPage />} />
-        <Route path="/avaliacao" element={<AvaliacaoPage />} /> {/* 🔴 NOVA */}
+        <Route path="/avaliacao" element={<AvaliacaoPage />} /> 
         <Route path="/login" element={<LoginPage />} />
         <Route
-  path="/dashboard/behavioral"
-  element={<BehavioralDashboardPage />}
+        path="/dashboard/behavioral"
+        element={<BehavioralDashboardPage />}
 />
-
-
-        {/* Rotas protegidas */}
         <Route
           path="/dashboard"
           element={
@@ -38,19 +34,6 @@ export default function AppRouter() {
             )
           }
         />
-
-        <Route
-          path="/admin/importar"
-          element={
-            isAdminLoggedIn() ? (
-              <ImportarCSVPage />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-
-        {/* Rotas inválidas → redireciona para home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

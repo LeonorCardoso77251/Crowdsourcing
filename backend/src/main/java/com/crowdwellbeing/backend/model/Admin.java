@@ -17,8 +17,6 @@ public class Admin {
     private String username;
     private String password;
 
-    // 🔹 Getters e Setters explícitos (SEM Lombok)
-
     public Long getId() {
         return id;
     }

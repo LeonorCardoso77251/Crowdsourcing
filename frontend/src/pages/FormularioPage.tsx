@@ -12,7 +12,7 @@ export default function FormularioPage() {
   useBehavioralTracking();
   const navigate = useNavigate();
 
-  // 🔑 Identidade única do utilizador
+  // Identidade única do utilizador
   const idUtilizador = localStorage.getItem("idUtilizador");
   const codigoParticipante = localStorage.getItem("codigoParticipante");
   const formularioCriadoRef = useRef(false);
@@ -20,16 +20,12 @@ export default function FormularioPage() {
 
   console.log("Utilizador ativo:", idUtilizador, codigoParticipante);
 
-  // =============================
   // Estados das respostas
-  // =============================
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedImage2, setSelectedImage2] = useState<string | null>(null);
   const [selectedImage3, setSelectedImage3] = useState<string | null>(null);
 
-  // =============================
-  // Criar / obter formulário
-  // =============================
   useEffect(() => {
   const iniciarFormulario = async () => {
     if (formularioCriadoRef.current) return;
@@ -48,17 +44,15 @@ export default function FormularioPage() {
       formularioId = String(form.idFormulario);
       localStorage.setItem("formularioId", formularioId);
 
-      console.log("📄 Formulário criado → ID:", formularioId);
+      console.log(" Formulário criado → ID:", formularioId);
     }
   };
 
   iniciarFormulario();
 }, [idUtilizador]);
 
-
-  // =============================
   // Enviar respostas
-  // =============================
+
   const enviarRespostas = async () => {
     try {
       const formularioId = localStorage.getItem("formularioId");
@@ -68,7 +62,7 @@ export default function FormularioPage() {
         return;
       }
 
-      console.log("📤 A enviar respostas para o backend");
+      console.log("A enviar respostas para o backend");
       console.log("idUtilizador:", idUtilizador);
       console.log("idFormulario:", formularioId);
       console.log("resposta1:", selectedImage);
@@ -83,11 +77,10 @@ export default function FormularioPage() {
         idFormulario: Number(formularioId),
       };
 
-      // 1️⃣ Enviar respostas
+      //Enviar respostas
       await api.post("/respostas", dadosParaEnviar);
-      console.log("✅ POST /respostas concluído com sucesso");
+      console.log("POST /respostas concluído com sucesso");
 
-      // 2️⃣ Flush dos logs comportamentais
       const w = window as unknown as {
         userLog?: {
           processResults: () => void;
@@ -96,13 +89,12 @@ export default function FormularioPage() {
 
       if (w.userLog) {
         w.userLog.processResults();
-        console.log("🧠 Logs comportamentais flushados");
+        console.log("Logs comportamentais flushados");
       }
 
-      // 3️⃣ Avançar para a avaliação
-navigate("/avaliacao", {
-  state: {
-    respostas: {
+    navigate("/avaliacao", {
+      state: {
+      respostas: {
       pergunta1: selectedImage,
       pergunta2: selectedImage2,
       pergunta3: selectedImage3,
@@ -111,44 +103,39 @@ navigate("/avaliacao", {
 });
 
     } catch (error) {
-      console.error("❌ Erro ao enviar respostas:", error);
+      console.error("Erro ao enviar respostas:", error);
       alert("Erro ao enviar respostas.");
     }
   };
 
-  // =============================
   // Imagens
-  // =============================
-  const imagens = [
-  "/img/img8.png", // 0
-  "/img/img1.png", // 1
-  "/img/img5.png", // 1
-  "/img/img9.png", // 2
-  "/img/img2.png", // 3
-  "/img/img6.png", // 3
-  ];
+      const imagens = [
+      "/img/img8.png", 
+      "/img/img1.png", 
+      "/img/img5.png",
+      "/img/img9.png",
+      "/img/img2.png", 
+      "/img/img6.png",
+      ];
 
-const imagensPergunta2 = [
-  "/img/img1.png",  // 1
-  "/img/img6.png",  // 3
-  "/img/img2.png",  // 3
-  "/img/img5.png",  // 1
-  "/img/img9.png",  // 2
-  "/img/img10.png", // 3
-  ];
+    const imagensPergunta2 = [
+      "/img/img1.png",  
+      "/img/img6.png", 
+      "/img/img2.png",  
+      "/img/img5.png",  
+      "/img/img9.png",  
+      "/img/img10.png", 
+      ];
 
-const imagensPergunta3 = [
-  "/img/img2.png", // 3
-  "/img/img5.png", // 1
-  "/img/img1.png", // 1
-  "/img/img9.png", // 2
-  "/img/img8.png", // 0
-  "/img/img4.png", // 2
-  ];
+    const imagensPergunta3 = [
+      "/img/img2.png", 
+      "/img/img5.png", 
+      "/img/img1.png", 
+      "/img/img9.png", 
+      "/img/img8.png", 
+      "/img/img4.png", 
+      ];
 
-  // =============================
-  // Render
-  // =============================
   return (
     <div>
       <Navbar />
@@ -176,7 +163,7 @@ const imagensPergunta3 = [
           </h2>
 
           <p className="mb-4">
-  Qual das imagens considera que apresenta um movimento do rato mais intenso ou agitado?
+            Qual das imagens considera que apresenta um movimento do rato mais intenso ou agitado?
           </p>
 
           <div className="grid grid-cols-2 gap-4">
@@ -194,16 +181,15 @@ const imagensPergunta3 = [
                   src={img}
                   alt={`opcao-${index}`}
                   className="
-  max-w-full 
-  max-h-full 
-  object-contain 
-  rounded 
-  transition 
-  duration-300 
-  ease-in-out
-  hover:scale-125
-"
-
+                      max-w-full 
+                      max-h-full 
+                      object-contain 
+                      rounded 
+                      transition 
+                      duration-300 
+                      ease-in-out
+                      hover:scale-125
+                    "
                 />
               </div>
             ))}
@@ -235,16 +221,15 @@ const imagensPergunta3 = [
                   src={img}
                   alt={`opcao-${index}`}
                   className="
-  max-w-full 
-  max-h-full 
-  object-contain 
-  rounded 
-  transition 
-  duration-300 
-  ease-in-out
-  hover:scale-125
-"
-
+                    max-w-full 
+                    max-h-full 
+                    object-contain 
+                    rounded 
+                    transition 
+                    duration-300 
+                    ease-in-out
+                    hover:scale-125
+                  "
                 />
               </div>
             ))}
@@ -276,16 +261,15 @@ const imagensPergunta3 = [
                   src={img}
                   alt={`opcao-${index}`}
                  className="
-  max-w-full 
-  max-h-full 
-  object-contain 
-  rounded 
-  transition 
-  duration-300 
-  ease-in-out
-  hover:scale-125
-"
-
+                    max-w-full 
+                    max-h-full 
+                    object-contain 
+                    rounded 
+                    transition 
+                    duration-300 
+                    ease-in-out
+                    hover:scale-125
+                  "
                 />
               </div>
             ))}

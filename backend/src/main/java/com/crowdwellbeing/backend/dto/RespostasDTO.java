@@ -4,7 +4,7 @@ public class RespostasDTO {
 
     private String resposta1;
     private String resposta2;
-    private String resposta3;  // 🔵 NOVO
+    private String resposta3;  
     private Long idUtilizador;
     private Long idFormulario;
 
@@ -24,7 +24,6 @@ public class RespostasDTO {
         this.resposta2 = resposta2;
     }
 
-    // 🔵 NOVO
     public String getResposta3() {
         return resposta3;
     }

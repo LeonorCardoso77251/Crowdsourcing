@@ -6,17 +6,17 @@ import { useLocation, Navigate } from "react-router-dom";
 import { calcularAvaliacao } from "../utils/avaliacao";
 
 export default function AvaliacaoPage() {
-  // Continua a recolher logs enquanto a página está aberta
+ 
   useBehavioralTracking();
 
-  // 🔹 Obter respostas vindas do formulário
+  // respostas vindas do formulário
   const location = useLocation();
   const respostas = location.state?.respostas;
 
-  // ✅ Calcula resultado só se houver respostas
+  // Calcula resultado só se houver respostas
   const resultado = respostas ? calcularAvaliacao(respostas) : null;
 
-  // 🔹 Guardar avaliação
+  // Guardar avaliação
   useEffect(() => {
     if (!resultado) return;
 
@@ -24,7 +24,7 @@ export default function AvaliacaoPage() {
     const idFormulario = localStorage.getItem("formularioId");
 
     if (!idUtilizador || !idFormulario) {
-      console.error("❌ idUtilizador ou idFormulario em falta");
+      console.error("idUtilizador ou idFormulario em falta");
       return;
     }
 
@@ -35,15 +35,15 @@ export default function AvaliacaoPage() {
       nivel: resultado.nivel,
     })
     .then(() => {
-      console.log("✅ Avaliação guardada com sucesso");
+      console.log("Avaliação guardada com sucesso");
     })
     .catch((err) => {
-      console.error("❌ Erro ao guardar avaliação:", err);
+      console.error("Erro ao guardar avaliação:", err);
     });
 
   }, [resultado]);
 
-  // 🔹 Guardar logs comportamentais
+  //  Guardar logs comportamentais
   useEffect(() => {
     const logs = localStorage.getItem("behaviorLogs");
     const idUtilizador = localStorage.getItem("idUtilizador");
@@ -55,7 +55,7 @@ export default function AvaliacaoPage() {
       logs: JSON.parse(logs),
     })
     .then(() => {
-      console.log("✅ Relatório criado / atualizado com sucesso");
+      console.log("Relatório criado / atualizado com sucesso");
 
       localStorage.removeItem("behaviorLogs");
       localStorage.removeItem("studyActive");
@@ -63,14 +63,14 @@ export default function AvaliacaoPage() {
     })
     .catch((err) => {
       if (err.response?.status === 500) {
-        console.warn("⚠️ Relatório já existente — ignorado");
+        console.warn(" Relatório já existente — ignorado");
       } else {
-        console.error("❌ Erro ao enviar logs:", err);
+        console.error("Erro ao enviar logs:", err);
       }
     });
   }, []);
 
-  // 🔐 Proteção de rota
+  // Proteção de rota
   if (!respostas) {
     return <Navigate to="/formulario" replace />;
   }
@@ -86,7 +86,7 @@ export default function AvaliacaoPage() {
 
         <p className="text-lg mb-6">
           A sua colaboração foi fundamental para o desenvolvimento deste estudo
-          académico. As respostas fornecidas contribuirão para a análise da
+          . As respostas fornecidas contribuirão para a análise da
           interação dos utilizadores com ambientes web.
         </p>
 
