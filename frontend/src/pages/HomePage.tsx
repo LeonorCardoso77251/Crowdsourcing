@@ -64,7 +64,7 @@ export default function HomePage() {
 
           <p>
             A participação é simples e rápida, com uma duração aproximada de
-            <strong> 2 a 3 minutos</strong>. No final, será apresentado um breve
+            <strong> 1 a 2 minutos</strong>. No final, será apresentado um breve
             resultado informativo, baseado exclusivamente nas suas escolhas ao
             longo da interação.
           </p>

@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import AdminNavbar from "../components/AdminNavbar";
 import { obterRelatorios } from "../api/api";
 
-import { Bar, Scatter } from "react-chartjs-2";
+import { Scatter, Chart } from "react-chartjs-2";
+
 import {
   Chart as ChartJS,
   Tooltip,
@@ -11,6 +12,7 @@ import {
   LinearScale,
   PointElement,
   BarElement,
+  LineElement,
 } from "chart.js";
 
 ChartJS.register(
@@ -19,8 +21,15 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
-  BarElement
+  BarElement,
+  LineElement
 );
+
+
+// =======================
+// TIPOS
+// =======================
+
 type MouseMovement = {
   x: number;
   y: number;
@@ -45,10 +54,67 @@ type Relatorio = {
   };
 };
 
-// FUNÇÕES AUXILIARES
-function calcularVelocidadeMedia(
-  movimentos: { x: number; y: number; timestamp: number }[]
-): number {
+// =======================
+// FUNÇÕES ESTATÍSTICAS
+// =======================
+
+function mediana(valores: number[]): number {
+  if (valores.length === 0) return 0;
+  const sorted = [...valores].sort((a, b) => a - b);
+  const meio = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0
+    ? sorted[meio]
+    : (sorted[meio - 1] + sorted[meio]) / 2;
+}
+function quartil(valores: number[], q: number): number {
+  if (valores.length === 0) return 0;
+
+  const sorted = [...valores].sort((a, b) => a - b);
+  const pos = (sorted.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+
+  if (sorted[base + 1] !== undefined) {
+    return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+  }
+
+  
+  return sorted[base];
+}
+
+function desvioPadrao(valores: number[]): number {
+  if (valores.length === 0) return 0;
+  const media = valores.reduce((a, b) => a + b, 0) / valores.length;
+  const variancia =
+    valores.reduce((a, b) => a + (b - media) ** 2, 0) /
+    valores.length;
+  return Math.sqrt(variancia);
+}
+
+function correlacaoPearson(x: number[], y: number[]): number {
+  if (x.length !== y.length || x.length === 0) return 0;
+
+  const mediaX = x.reduce((a, b) => a + b, 0) / x.length;
+  const mediaY = y.reduce((a, b) => a + b, 0) / y.length;
+
+  let num = 0;
+  let denX = 0;
+  let denY = 0;
+
+  for (let i = 0; i < x.length; i++) {
+    num += (x[i] - mediaX) * (y[i] - mediaY);
+    denX += (x[i] - mediaX) ** 2;
+    denY += (y[i] - mediaY) ** 2;
+  }
+
+  return num / Math.sqrt(denX * denY);
+}
+
+// =======================
+// FUNÇÕES COMPORTAMENTAIS
+// =======================
+
+function calcularVelocidadeMedia(movimentos: MouseMovement[]): number {
   if (!movimentos || movimentos.length < 2) return 0;
 
   let distanciaTotal = 0;
@@ -63,8 +129,7 @@ function calcularVelocidadeMedia(
   }
 
   if (tempoTotal <= 0) return 0;
-
-  return distanciaTotal / tempoTotal; 
+  return distanciaTotal / tempoTotal;
 }
 
 function classificarEnvolvimento(
@@ -73,8 +138,8 @@ function classificarEnvolvimento(
   movimentos: number
 ): "Baixo" | "Médio" | "Alto" {
   const score =
-    (tempo > 5 ? 1 : 0) +
-    (cliques > 3 ? 1 : 0) +
+    (tempo > 60 ? 1 : 0) +
+    (cliques > 5 ? 1 : 0) +
     (movimentos > 500 ? 1 : 0);
 
   if (score <= 1) return "Baixo";
@@ -82,232 +147,259 @@ function classificarEnvolvimento(
   return "Alto";
 }
 
+function interpretarCorrelacao(r: number): string {
+  const abs = Math.abs(r);
+  if (abs < 0.3) return "Correlação fraca entre tempo e cliques.";
+  if (abs < 0.6) return "Correlação moderada entre tempo e cliques.";
+  return "Correlação forte entre tempo e cliques.";
+}
+
+function analisarTempo(tempo: number): string {
+  if (tempo < 60)
+    return "Interação muito rápida — possível leitura superficial.";
+  if (tempo < 180)
+    return "Tempo compatível com preenchimento normal.";
+  return "Interação prolongada — possível maior envolvimento cognitivo.";
+}
+
+// =======================
 // COMPONENTE
+// =======================
+
 export default function BehavioralDashboardPage() {
   const [relatorios, setRelatorios] = useState<Relatorio[]>([]);
   const [loading, setLoading] = useState(true);
 
-  //  CARREGAR RELATÓRIOS
-  
   useEffect(() => {
     const carregar = async () => {
       try {
         const rels = await obterRelatorios();
         setRelatorios(rels);
       } catch (e) {
-        console.error("Erro ao carregar relatórios:", e);
+        console.error(e);
       } finally {
         setLoading(false);
       }
     };
-
     carregar();
   }, []);
 
-  //  RELATÓRIOS COM LOGS
-
   const relatoriosValidos = useMemo(() => {
-  return relatorios
-    .map((r) => {
-      if (!r.behavioralLogs) return null;
+    return relatorios
+      .map((r) => {
+        if (!r.behavioralLogs) return null;
+        try {
+          const parsed: BehavioralLogs =
+            typeof r.behavioralLogs === "string"
+              ? JSON.parse(r.behavioralLogs)
+              : (r.behavioralLogs as BehavioralLogs);
 
-      try {
-        const parsed: BehavioralLogs =
-          typeof r.behavioralLogs === "string"
-            ? JSON.parse(r.behavioralLogs)
-            : (r.behavioralLogs as BehavioralLogs);
-
-        return {
-          idRelatorio: r.idRelatorio,
-          utilizador: r.utilizador,
-          logs: parsed,
-        };
-      } catch {
-        return null;
-      }
-    })
-    .filter(
-      (r): r is {
-        idRelatorio: number;
-        utilizador: { idUtilizador: number };
-        logs: BehavioralLogs;
-      } => r !== null
-    );
-}, [relatorios]);
-
-  //EXTRAÇÃO DE MÉTRICAS
+          return {
+            utilizador: r.utilizador.idUtilizador,
+            logs: parsed,
+          };
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean) as {
+      utilizador: number;
+      logs: BehavioralLogs;
+    }[];
+  }, [relatorios]);
 
   const metricas = useMemo(() => {
     return relatoriosValidos.map((r) => {
       const tempo = r.logs.time?.totalTime ?? 0;
       const cliques = r.logs.clicks?.clickCount ?? 0;
-      const movimentosArr: MouseMovement[] =
-  r.logs.mouseMovements ?? [];
-
-      const movimentos = movimentosArr.length;
-
-      const velocidade = calcularVelocidadeMedia(movimentosArr);
-      const envolvimento = classificarEnvolvimento(
-        tempo,
-        cliques,
-        movimentos
-      );
+      const movimentosArr = r.logs.mouseMovements ?? [];
 
       return {
-        utilizador: r.utilizador.idUtilizador,
+        utilizador: r.utilizador,
         tempo,
         cliques,
-        movimentos,
-        velocidade,
-        envolvimento,
+        movimentos: movimentosArr.length,
+        velocidade: calcularVelocidadeMedia(movimentosArr),
+        envolvimento: classificarEnvolvimento(
+          tempo,
+          cliques,
+          movimentosArr.length
+        ),
+        analiseTempo: analisarTempo(tempo),
       };
     });
   }, [relatoriosValidos]);
 
-  //  KPIs
+  // =======================
+  // ESTATÍSTICAS
+  // =======================
 
-  const kpis = useMemo(() => {
-    const total = metricas.length;
+  const tempos = metricas.map((m) => m.tempo);
+  const cliques = metricas.map((m) => m.cliques);
+  const q1 = quartil(tempos, 0.25);
+const q3 = quartil(tempos, 0.75);
+const med = quartil(tempos, 0.5);
+const min = Math.min(...tempos);
+const max = Math.max(...tempos);
+const media =
+  tempos.reduce((a, b) => a + b, 0) / (tempos.length || 1);
 
-    if (total === 0) {
-      return {
-        tempoMedio: "0.00",
-        cliquesMedios: "0.00",
-        movimentosMedios: "0.00",
-        velocidadeMedia: "0.0000",
-      };
-    }
-
-    const somaTempo = metricas.reduce((a, m) => a + m.tempo, 0);
-    const somaCliques = metricas.reduce((a, m) => a + m.cliques, 0);
-    const somaMov = metricas.reduce((a, m) => a + m.movimentos, 0);
-    const somaVel = metricas.reduce((a, m) => a + m.velocidade, 0);
-
-    return {
-      tempoMedio: (somaTempo / total).toFixed(2),
-      cliquesMedios: (somaCliques / total).toFixed(2),
-      movimentosMedios: (somaMov / total).toFixed(2),
-      velocidadeMedia: (somaVel / total).toFixed(4),
-    };
-  }, [metricas]);
-
-
-  //GRÁFICOS
-
-  const dadosTempo = {
-    labels: metricas.map((m) => `U${m.utilizador}`),
-    datasets: [
-      {
-        label: "Tempo (s)",
-        data: metricas.map((m) => m.tempo),
-        backgroundColor: "#4A90E2",
-      },
-    ],
+  const stats = {
+    tempoMediana: mediana(tempos).toFixed(2),
+    tempoDP: desvioPadrao(tempos).toFixed(2),
+    cliquesMediana: mediana(cliques).toFixed(2),
+    cliquesDP: desvioPadrao(cliques).toFixed(2),
   };
 
-  const dadosCliques = {
-    labels: metricas.map((m) => `U${m.utilizador}`),
-    datasets: [
-      {
-        label: "Cliques",
-        data: metricas.map((m) => m.cliques),
-        backgroundColor: "#7ED321",
+  const rPearson = correlacaoPearson(tempos, cliques);
+  const interpretacaoPearson = interpretarCorrelacao(rPearson);
+
+  // =======================
+  // GRÁFICOS
+  // =======================
+// =======================
+// BOXPLOT MANUAL — DADOS
+// =======================
+
+const dadosBoxplotManual: unknown = {
+
+  labels: ["Tempo de Interação (s)"],
+  datasets: [
+    // 🟦 CAIXA (Q1 → Q3)
+    {
+      type: "bar" as const,
+      label: "Intervalo Interquartil",
+      data: [q3 - q1],
+      backgroundColor: "rgba(74,144,226,0.4)",
+      borderColor: "#4A90E2",
+      borderWidth: 2,
+      base: q1,
+    },
+
+    // ➖ MEDIANA
+    {
+      type: "line" as const,
+      label: "Mediana",
+      data: [med],
+      borderColor: "#000",
+      borderWidth: 3,
+      pointRadius: 0,
+    },
+
+    // 🔴 MÉDIA
+    {
+      type: "scatter" as const,
+      label: "Média",
+      data: [{ x: 0, y: media }],
+      backgroundColor: "red",
+      pointRadius: 6,
+    },
+
+    // ⬇️ WHISKER INFERIOR
+    {
+      type: "line" as const,
+      label: "Mínimo",
+      data: [min],
+      borderColor: "#555",
+      borderWidth: 2,
+      pointRadius: 0,
+    },
+
+    // ⬆️ WHISKER SUPERIOR
+    {
+      type: "line" as const,
+      label: "Máximo",
+      data: [max],
+      borderColor: "#555",
+      borderWidth: 2,
+      pointRadius: 0,
+    },
+  ],
+};
+const opcoesBoxplotManual = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: true,
+    },
+  },
+  scales: {
+    x: {
+      display: false,
+    },
+    y: {
+      title: {
+        display: true,
+        text: "Segundos",
       },
-    ],
-  };
+    },
+  },
+};
 
   const dadosScatter = {
     datasets: [
       {
         label: "Tempo vs Cliques",
-        data: metricas.map((m) => ({
-          x: m.tempo,
-          y: m.cliques,
-        })),
-        backgroundColor: "#D0021B",
+        data: metricas.map((m) => ({ x: m.tempo, y: m.cliques })),
+        backgroundColor: "#4A90E2",
       },
     ],
   };
 
-  const dadosEnvolvimento = useMemo(() => {
-    const cont = { Baixo: 0, Médio: 0, Alto: 0 };
-
-    metricas.forEach((m) => cont[m.envolvimento]++);
-
-    return {
-      labels: Object.keys(cont),
-      datasets: [
-        {
-          label: "Envolvimento",
-          data: Object.values(cont),
-          backgroundColor: ["#D0021B", "#F5A623", "#7ED321"],
-        },
-      ],
-    };
-  }, [metricas]);
-
-
-  //RENDER
+  // =======================
+  // RENDER
+  // =======================
 
   return (
     <>
       <AdminNavbar />
-
       <div className="p-10">
-        <h1 className="text-3xl font-bold mb-2">
-          Dashboard — Análise Comportamental
+        <h1 className="text-3xl font-bold mb-6">
+          Dashboard — Análise Comportamental Avançada
         </h1>
-
-        <p className="text-gray-600 mb-10 lg:mb-14">
-
-        </p>
 
         {loading ? (
           <p>A carregar dados…</p>
         ) : (
           <>
-            {/* KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-              <KPI titulo="Tempo Médio (s)" valor={kpis.tempoMedio} />
-              <KPI titulo="Cliques Médios" valor={kpis.cliquesMedios} />
-              <KPI titulo="Movimentos Médios" valor={kpis.movimentosMedios} />
-              <KPI
-                titulo="Velocidade Média (px/ms)"
-                valor={kpis.velocidadeMedia}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+              <KPI titulo="Mediana Tempo (s)" valor={stats.tempoMediana} />
+              <KPI titulo="DP Tempo" valor={stats.tempoDP} />
+              <KPI titulo="Mediana Cliques" valor={stats.cliquesMediana} />
+              <KPI titulo="DP Cliques" valor={stats.cliquesDP} />
             </div>
 
-            {/* GRÁFICOS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">
-                  Tempo por Utilizador
-                </h2>
-                <Bar data={dadosTempo} />
-              </div>
+            <div className="bg-white p-6 rounded shadow mb-10">
+              <h2 className="font-semibold mb-2">
+                Correlação de Pearson
+              </h2>
+              <div className="bg-white p-6 rounded shadow mb-10">
+  <h2 className="font-semibold mb-4">
+    Distribuição do Tempo de Interação
+  </h2>
 
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">
-                  Cliques por Utilizador
-                </h2>
-                <Bar data={dadosCliques} />
-              </div>
+<Chart
+  type="bar"
+  data={
+    dadosBoxplotManual as unknown as import("chart.js").ChartData<"bar">
+  }
+  options={opcoesBoxplotManual}
+/>
+</div>
+
+              <p>
+                r = <strong>{rPearson.toFixed(3)}</strong>
+              </p>
+              <p className="text-gray-600 mt-2">
+                {interpretacaoPearson}
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">
-                  Relação Tempo vs Cliques
-                </h2>
-                <Scatter data={dadosScatter} />
-              </div>
-
-              <div className="bg-white p-6 shadow rounded">
-                <h2 className="font-semibold mb-4">
-                  Nível de Envolvimento
-                </h2>
-                <Bar data={dadosEnvolvimento} />
-              </div>
+            <div className="bg-white p-6 rounded shadow">
+              <h2 className="font-semibold mb-4">
+                Relação Tempo vs Cliques
+              </h2>
+              <Scatter data={dadosScatter} />
             </div>
           </>
         )}
@@ -316,18 +408,15 @@ export default function BehavioralDashboardPage() {
   );
 }
 
+// =======================
 // KPI COMPONENT
+// =======================
 
-function KPI({ titulo, valor }: { titulo: string; valor: number | string }) {
+function KPI({ titulo, valor }: { titulo: string; valor: string }) {
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
-      <p className="text-xs uppercase tracking-wider text-gray-500">
-        {titulo}
-      </p>
-      <p className="mt-3 text-3xl font-bold text-gray-900">
-        {valor}
-      </p>
+    <div className="bg-white p-6 rounded-xl shadow text-center">
+      <p className="text-xs text-gray-500 uppercase">{titulo}</p>
+      <p className="mt-3 text-2xl font-bold">{valor}</p>
     </div>
   );
 }
-
