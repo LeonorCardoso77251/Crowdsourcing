@@ -1,40 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Teste do Mapeamento</title>
-</head>
-<body>
-
-<h1>Página de Teste do Mapeamento</h1>
-<button id="myActionItem">Enviar Dados</button>
-
-<script src="behaviorPhenotyping.js"></script>
-
-<script>
-    userLog.init({
-        processTime: 0, // não enviar automático
-        actionItem: {
-            processOnAction: true,
-            selector: '#myActionItem',
-            event: 'click'
-        },
-        processData: function (results) {
-            console.log("A enviar para o backend...");
-            console.log(results);
-
-            fetch("/api/mapeamento", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(results)
-            })
-            .then(r => r.text())
-            .then(resp => console.log("Backend respondeu:", resp))
-            .catch(e => console.error("Erro:", e));
-        }
-    });
-</script>
-
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+    <script type="module" crossorigin src="/assets/index-DHYXXsmi.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Cm60rzXW.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="/behaviorPhenotyping.js"></script>
+  </body>
+  
 </html>
